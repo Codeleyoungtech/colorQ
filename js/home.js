@@ -208,6 +208,11 @@ class HomeApp {
                 bg: project.background
             });
             
+            // Store CLQ data for loading in editor
+            if (project.clqData) {
+                localStorage.setItem('loadCLQ', JSON.stringify(project.clqData));
+            }
+            
             window.location.href = `app.html?${params.toString()}`;
         }
     }

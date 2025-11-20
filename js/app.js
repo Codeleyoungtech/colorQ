@@ -72,6 +72,9 @@ class ColorLab {
       await this.colorManager.init();
       await this.canvasEngine.init();
 
+      // Load CLQ project if available
+      this.loadCLQProject();
+      
       // Show app
       this.showApp();
 
@@ -754,6 +757,48 @@ class ColorLab {
   toggleMixMode() {
     const newMode = this.state.mixMode === "draw" ? "instant" : "draw";
     this.setMixMode(newMode);
+  }
+
+  loadCLQProject() {
+    const clqData = localStorage.getItem('loadCLQ');
+    if (clqData) {
+      try {
+        const projectData = JSON.parse(clqData);
+        
+        // Restore canvas
+        if (projectData.canvas) {
+          const img = new Image();
+          img.onload = () => {
+            this.canvasEngine.ctx.drawImage(img, 0, 0);
+            this.canvasEngine.saveState();
+          };
+          img.src = projectData.canvas;
+        }
+        
+        // Restore colors
+        if (projectData.colors && this.colorManager) {
+          this.colorManager.recentColors = projectData.colors;
+          this.colorManager.renderRecentColors();
+        }
+        
+        // Restore settings
+        if (projectData.settings) {
+          this.state = { ...this.state, ...projectData.settings };
+        }
+        
+        // Update project name
+        if (projectData.name) {
+          const nameEl = document.getElementById('project-name');
+          if (nameEl) nameEl.textContent = projectData.name;
+        }
+        
+        this.showToast(`CLQ project loaded: ${projectData.name}`, 'success');
+        localStorage.removeItem('loadCLQ');
+      } catch (error) {
+        console.error('Failed to load CLQ project:', error);
+        localStorage.removeItem('loadCLQ');
+      }
+    }
   }
 
   updateSettings(newSettings) {
