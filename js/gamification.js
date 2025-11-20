@@ -323,7 +323,15 @@ class GamificationEngine {
       };
       
       localStorage.setItem('dailyChallenge', JSON.stringify(dailyChallenge));
-      this.showDailyChallengeNotification(dailyChallenge);
+      
+      // Only show notification if not already shown today
+      const notificationShown = localStorage.getItem('challengeNotificationShown');
+      if (notificationShown !== today) {
+        setTimeout(() => {
+          this.showDailyChallengeNotification(dailyChallenge);
+          localStorage.setItem('challengeNotificationShown', today);
+        }, 2000);
+      }
     }
   }
 
@@ -388,14 +396,16 @@ class GamificationEngine {
 
   unlockAchievement(achievementId) {
     const achievement = this.achievements.find(a => a.id === achievementId);
-    if (!achievement || achievement.unlocked) return;
+    if (!achievement || this.hasAchievement(achievementId)) return;
     
     achievement.unlocked = true;
     this.userStats.achievements_unlocked.push(achievementId);
     
     this.awardXP(achievement.xp);
-    this.app.animationEngine.celebrateAchievement(achievement.name);
-    this.app.showToast(`Achievement unlocked: ${achievement.name}!`, 'success');
+    if (this.app.animationEngine) {
+      this.app.animationEngine.celebrateAchievement(achievement.name);
+    }
+    this.app.showToast(`🏆 Achievement: ${achievement.name}!`, 'success');
     
     this.saveUserStats();
     this.updateAchievementUI();
@@ -556,8 +566,27 @@ class GamificationEngine {
               <div class="stat-label">Streak</div>
             </div>
           </div>
-          <div class="achievement-grid">
-            ${this.achievements.map(achievement => this.renderAchievement(achievement)).join('')}
+          <div class="achievements-container">
+            <div class="achievement-section">
+              <h4>Available Achievements</h4>
+              <div class="achievement-grid">
+                ${this.achievements.filter(a => !a.unlocked).map(achievement => this.renderAchievement(achievement)).join('')}
+              </div>
+            </div>
+            
+            <div class="completed-section">
+              <button class="completed-toggle" id="completed-toggle">
+                <span>Completed Achievements (${this.userStats.achievements_unlocked.length})</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+              </button>
+              <div class="completed-achievements" id="completed-achievements" style="display: none;">
+                <div class="achievement-grid">
+                  ${this.achievements.filter(a => a.unlocked).map(achievement => this.renderAchievement(achievement)).join('')}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -577,6 +606,18 @@ class GamificationEngine {
         setTimeout(() => modal.remove(), 300);
       }
     });
+    
+    // Setup completed achievements toggle
+    const completedToggle = modal.querySelector('#completed-toggle');
+    const completedSection = modal.querySelector('#completed-achievements');
+    if (completedToggle && completedSection) {
+      completedToggle.addEventListener('click', () => {
+        const isVisible = completedSection.style.display !== 'none';
+        completedSection.style.display = isVisible ? 'none' : 'block';
+        const arrow = completedToggle.querySelector('svg');
+        arrow.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+      });
+    }
   }
 
   renderAchievement(achievement) {
@@ -616,6 +657,11 @@ class GamificationEngine {
     const saved = localStorage.getItem('userStats');
     if (saved) {
       this.userStats = { ...this.userStats, ...JSON.parse(saved) };
+      // Mark achievements as unlocked based on saved data
+      this.userStats.achievements_unlocked.forEach(id => {
+        const achievement = this.achievements.find(a => a.id === id);
+        if (achievement) achievement.unlocked = true;
+      });
     }
   }
 

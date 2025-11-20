@@ -64,17 +64,21 @@
             title="Settings"
           >
             <svg
+              xmlns="http://www.w3.org/2000/svg"
               width="20"
               height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-settings-icon lucide-settings"
             >
-              <circle cx="12" cy="12" r="3"></circle>
               <path
-                d="M12 1v6m0 6v6m11-7h-6m-6 0H1m17-4a4 4 0 0 0-8 0m8 0a4 4 0 0 0-8 0"
-              ></path>
+                d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
+              />
+              <circle cx="12" cy="12" r="3" />
             </svg>
           </button>
           <button
@@ -84,16 +88,20 @@
             title="Help"
           >
             <svg
+              xmlns="http://www.w3.org/2000/svg"
               width="20"
               height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-info-icon lucide-info"
             >
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4" />
+              <path d="M12 8h.01" />
             </svg>
           </button>
         </div>
@@ -106,15 +114,24 @@
         title="Show Colors"
       >
         <svg
+          xmlns="http://www.w3.org/2000/svg"
           width="16"
           height="16"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-palette-icon lucide-palette"
         >
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M12 1v6m0 6v6"></path>
+          <path
+            d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
+          />
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
         </svg>
       </button>
       <button
@@ -240,15 +257,24 @@
                 title="Draw Mode - Gradual blending"
               >
                 <svg
+                  xmlns="http://www.w3.org/2000/svg"
                   width="20"
                   height="20"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-brush-icon lucide-brush"
                 >
-                  <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
-                  <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                  <path d="m11 10 3 3" />
+                  <path
+                    d="M6.5 21A3.5 3.5 0 1 0 3 17.5a2.62 2.62 0 0 1-.708 1.792A1 1 0 0 0 3 21z"
+                  />
+                  <path
+                    d="M9.969 17.031 21.378 5.624a1 1 0 0 0-3.002-3.002L6.967 14.031"
+                  />
                 </svg>
                 <span>Draw</span>
               </button>
@@ -258,15 +284,25 @@
                 title="Instant Mix - Click to mix entire canvas"
               >
                 <svg
+                  xmlns="http://www.w3.org/2000/svg"
                   width="20"
                   height="20"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-paint-bucket-icon lucide-paint-bucket"
                 >
-                  <circle cx="12" cy="12" r="3"></circle>
-                  <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+                  <path
+                    d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"
+                  />
+                  <path d="m5 2 5 5" />
+                  <path d="M2 13h15" />
+                  <path
+                    d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z"
+                  />
                 </svg>
                 <span>Mix</span>
               </button>
@@ -279,28 +315,43 @@
                 title="Brush (B)"
               >
                 <svg
+                  xmlns="http://www.w3.org/2000/svg"
                   width="20"
                   height="20"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-paintbrush-icon lucide-paintbrush"
                 >
-                  <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
-                  <circle cx="11" cy="11" r="2"></circle>
+                  <path d="m14.622 17.897-10.68-2.913" />
+                  <path
+                    d="M18.376 2.622a1 1 0 1 1 3.002 3.002L17.36 9.643a.5.5 0 0 0 0 .707l.944.944a2.41 2.41 0 0 1 0 3.408l-.944.944a.5.5 0 0 1-.707 0L8.354 7.348a.5.5 0 0 1 0-.707l.944-.944a2.41 2.41 0 0 1 3.408 0l.944.944a.5.5 0 0 0 .707 0z"
+                  />
+                  <path
+                    d="M9 8c-1.804 2.71-3.97 3.46-6.583 3.948a.507.507 0 0 0-.302.819l7.32 8.883a1 1 0 0 0 1.185.204C12.735 20.405 16 16.792 16 15"
+                  />
                 </svg>
               </button>
               <button class="tool-btn" data-tool="eraser" title="Eraser (E)">
                 <svg
+                  xmlns="http://www.w3.org/2000/svg"
                   width="20"
                   height="20"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-eraser-icon lucide-eraser"
                 >
-                  <path d="M20 20H7l-7-7 7-7h13v14z"></path>
-                  <path d="M7 20l7-7"></path>
+                  <path
+                    d="M21 21H8a2 2 0 0 1-1.42-.587l-3.994-3.999a2 2 0 0 1 0-2.828l10-10a2 2 0 0 1 2.829 0l5.999 6a2 2 0 0 1 0 2.828L12.834 21"
+                  />
+                  <path d="m5.082 11.09 8.828 8.828" />
                 </svg>
               </button>
             </div>
@@ -339,7 +390,7 @@
                   title="Double-click to copy color"
                 ></div>
                 <div class="mixed-color-info">
-                  <div class="mixed-color-label">Mixed Color</div>
+                  <div class="mixed-color-label">Color</div>
                   <div
                     class="mixed-color-hex"
                     id="mixed-color-hex"

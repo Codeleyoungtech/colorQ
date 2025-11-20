@@ -73,7 +73,10 @@ class ColorLab {
       await this.canvasEngine.init();
 
       // Load CLQ project if available
-      this.loadCLQProject();
+      const clqData = localStorage.getItem('loadCLQ');
+      if (clqData) {
+        this.loadCLQProject();
+      }
       
       // Show app
       this.showApp();
@@ -230,12 +233,7 @@ class ColorLab {
       this.exportCanvas();
     });
 
-    // Auto-save
-    if (this.state.settings.autoSave) {
-      setInterval(() => {
-        this.autoSave();
-      }, 30000); // Every 30 seconds
-    }
+    // Canvas auto-saves on every change now
   }
 
   setupKeyboardShortcuts() {
@@ -410,8 +408,20 @@ class ColorLab {
   surpriseMe() {
     const randomColor = this.colorManager.getRandomColor();
     this.selectColor(randomColor.hex, randomColor.name);
-    this.canvasEngine.createSurpriseEffect();
-    this.showToast(`Selected ${randomColor.name}!`, "success");
+    
+    // Create surprise effect if canvas engine supports it
+    if (this.canvasEngine.createSurpriseEffect) {
+      this.canvasEngine.createSurpriseEffect();
+    }
+    
+    // Show instructions for what to do next
+    this.showToast(`🎨 ${randomColor.name} selected! Start drawing to create art!`, "success");
+    
+    // Add some visual feedback
+    if (this.animationEngine) {
+      this.animationEngine.createParticleExplosion(400, 300, randomColor.hex);
+    }
+    
     this.playSound("surprise");
   }
 
@@ -536,15 +546,34 @@ class ColorLab {
   }
 
   autoSave() {
-    if (this.canvasEngine.hasChanges()) {
-      const imageData = this.canvasEngine.getImageData();
+    try {
+      const canvasData = this.canvasEngine.export();
       this.storageManager.set("autoSave", {
-        imageData: imageData,
+        canvasData: canvasData,
         timestamp: Date.now(),
         settings: this.state,
+        colors: this.colorManager.recentColors
       });
-
       this.updateProjectStatus("Auto-saved");
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+    }
+  }
+
+  loadAutoSave() {
+    const autoSave = this.storageManager.get('autoSave');
+    if (autoSave && autoSave.canvasData) {
+      const img = new Image();
+      img.onload = () => {
+        this.canvasEngine.ctx.drawImage(img, 0, 0);
+        this.canvasEngine.saveState();
+        this.showToast('Previous work restored', 'success');
+      };
+      img.src = autoSave.canvasData;
+      
+      if (autoSave.colors) {
+        this.colorManager.recentColors = autoSave.colors;
+      }
     }
   }
 
@@ -767,12 +796,16 @@ class ColorLab {
         
         // Restore canvas
         if (projectData.canvas) {
-          const img = new Image();
-          img.onload = () => {
-            this.canvasEngine.ctx.drawImage(img, 0, 0);
-            this.canvasEngine.saveState();
-          };
-          img.src = projectData.canvas;
+          localStorage.setItem('canvasPersist', projectData.canvas);
+          setTimeout(() => {
+            const img = new Image();
+            img.onload = () => {
+              this.canvasEngine.ctx.clearRect(0, 0, this.canvasEngine.canvas.width, this.canvasEngine.canvas.height);
+              this.canvasEngine.ctx.drawImage(img, 0, 0);
+              this.canvasEngine.saveState();
+            };
+            img.src = projectData.canvas;
+          }, 500);
         }
         
         // Restore colors

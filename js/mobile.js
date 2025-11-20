@@ -13,7 +13,7 @@ class MobileOptimizer {
   }
 
   init() {
-    this.createFloatingActionButton();
+    this.detectMobile();
     this.createBottomNavigation();
     this.setupTouchGestures();
     this.setupHapticFeedback();
@@ -22,6 +22,15 @@ class MobileOptimizer {
     this.setupShakeToUndo();
     this.setupPanelClose();
   }
+
+  detectMobile() {
+    const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      document.body.classList.add('mobile-mode');
+    }
+  }
+
+
 
   createFloatingActionButton() {
     const fab = document.createElement('div');
@@ -127,14 +136,20 @@ class MobileOptimizer {
         <span>Canvas</span>
       </button>
       <button class="nav-item" data-nav="colors">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"></circle>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-palette-icon lucide-palette">
+          <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/>
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
         </svg>
         <span>Colors</span>
       </button>
       <button class="nav-item" data-nav="tools">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paintbrush-icon lucide-paintbrush">
+          <path d="m14.622 17.897-10.68-2.913"/>
+          <path d="M18.376 2.622a1 1 0 1 1 3.002 3.002L17.36 9.643a.5.5 0 0 0 0 .707l.944.944a2.41 2.41 0 0 1 0 3.408l-.944.944a.5.5 0 0 1-.707 0L8.354 7.348a.5.5 0 0 1 0-.707l.944-.944a2.41 2.41 0 0 1 3.408 0l.944.944a.5.5 0 0 0 .707 0z"/>
+          <path d="M9 8c-1.804 2.71-3.97 3.46-6.583 3.948a.507.507 0 0 0-.302.819l7.32 8.883a1 1 0 0 0 1.185.204C12.735 20.405 16 16.792 16 15"/>
         </svg>
         <span>Tools</span>
       </button>
@@ -142,6 +157,7 @@ class MobileOptimizer {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
           <polyline points="7,10 12,15 17,10"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
         </svg>
         <span>Export</span>
       </button>
@@ -156,11 +172,6 @@ class MobileOptimizer {
       item.addEventListener('click', (e) => {
         const nav = e.currentTarget.dataset.nav;
         this.handleBottomNavAction(nav);
-        
-        // Update active state
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-        
         this.hapticFeedback('light');
       });
     });
@@ -169,18 +180,24 @@ class MobileOptimizer {
   handleBottomNavAction(nav) {
     switch (nav) {
       case 'canvas':
-        this.focusCanvas();
+        this.closeAllPanels();
         break;
       case 'colors':
-        document.getElementById('color-panel').classList.add('open');
+        this.toggleColorPanel();
         break;
       case 'tools':
-        document.getElementById('tools-panel').classList.add('open');
+        this.toggleToolsPanel();
         break;
       case 'export':
         this.app.exportCanvas();
         break;
     }
+  }
+
+  closeAllPanels() {
+    document.getElementById('color-panel').classList.remove('open');
+    document.getElementById('tools-panel').classList.remove('open');
+    this.hideOverlay();
   }
 
   setupTouchGestures() {
@@ -573,26 +590,73 @@ class MobileOptimizer {
 
   toggleColorPanel() {
     const panel = document.getElementById('color-panel');
-    panel.classList.toggle('open');
+    const isOpen = panel.classList.contains('open');
+    
+    this.closeAllPanels();
+    
+    if (!isOpen) {
+      panel.classList.add('open');
+      this.showOverlay();
+    }
   }
 
   toggleToolsPanel() {
     const panel = document.getElementById('tools-panel');
-    panel.classList.toggle('open');
+    const isOpen = panel.classList.contains('open');
+    
+    this.closeAllPanels();
+    
+    if (!isOpen) {
+      panel.classList.add('open');
+      this.showOverlay();
+    }
+  }
+
+  showOverlay() {
+    let overlay = document.querySelector('.panel-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.className = 'panel-overlay';
+      overlay.addEventListener('click', () => {
+        this.closeAllPanels();
+        this.hideOverlay();
+      });
+      document.body.appendChild(overlay);
+    }
+    overlay.classList.add('active');
+  }
+
+  hideOverlay() {
+    const overlay = document.querySelector('.panel-overlay');
+    if (overlay) {
+      overlay.classList.remove('active');
+    }
   }
 
   setupPanelClose() {
-    // Close panels when clicking outside
     document.addEventListener('click', (e) => {
+      if (!document.body.classList.contains('mobile-mode')) return;
+      
       const colorPanel = document.getElementById('color-panel');
       const toolsPanel = document.getElementById('tools-panel');
       
-      if (!e.target.closest('#color-panel') && !e.target.closest('[data-nav="colors"]')) {
-        colorPanel.classList.remove('open');
+      // Close color panel if clicking outside
+      if (colorPanel && colorPanel.classList.contains('open')) {
+        if (!e.target.closest('#color-panel') && 
+            !e.target.closest('[data-nav="colors"]') && 
+            !e.target.closest('.fab-item[data-action="colors"]')) {
+          colorPanel.classList.remove('open');
+          this.hapticFeedback('light');
+        }
       }
       
-      if (!e.target.closest('#tools-panel') && !e.target.closest('[data-nav="tools"]')) {
-        toolsPanel.classList.remove('open');
+      // Close tools panel if clicking outside
+      if (toolsPanel && toolsPanel.classList.contains('open')) {
+        if (!e.target.closest('#tools-panel') && 
+            !e.target.closest('[data-nav="tools"]')) {
+          toolsPanel.classList.remove('open');
+          this.hapticFeedback('light');
+        }
       }
     });
   }

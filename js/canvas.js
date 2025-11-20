@@ -27,6 +27,11 @@ class CanvasEngine {
         
         this.setupEventListeners();
         this.saveState();
+        
+        // Load saved canvas after a short delay
+        setTimeout(() => {
+            this.loadFromStorage();
+        }, 100);
     }
 
     setupEventListeners() {
@@ -225,6 +230,7 @@ class CanvasEngine {
         }
         
         this.saveState();
+        this.saveToStorage();
         this.hasUnsavedChanges = true;
         this.updateMixedColorDisplay();
     }
@@ -286,8 +292,37 @@ class CanvasEngine {
             this.isDrawing = false;
             this.saveState();
             this.updateMixedColorDisplay();
+            this.saveToStorage();
             // Dispatch draw end event for gamification
             document.dispatchEvent(new CustomEvent('canvasDrawEnd'));
+        }
+    }
+
+    saveToStorage() {
+        try {
+            const canvasData = this.canvas.toDataURL();
+            localStorage.setItem('canvasPersist', canvasData);
+        } catch (error) {
+            console.error('Failed to save canvas:', error);
+        }
+    }
+
+    loadFromStorage() {
+        try {
+            const canvasData = localStorage.getItem('canvasPersist');
+            if (canvasData) {
+                const img = new Image();
+                img.onload = () => {
+                    this.ctx.drawImage(img, 0, 0);
+                    this.saveState();
+                    // Hide welcome message since canvas has content
+                    const overlay = document.getElementById('canvas-overlay');
+                    if (overlay) overlay.classList.add('hidden');
+                };
+                img.src = canvasData;
+            }
+        } catch (error) {
+            console.error('Failed to load canvas:', error);
         }
     }
     
@@ -442,6 +477,7 @@ class CanvasEngine {
         }
         
         this.saveState();
+        this.saveToStorage();
     }
 
     setCanvasSize(width, height) {
