@@ -1,0 +1,96 @@
+/* Mobile Optimization Styles */
+:root { --vh: 1vh; }
+body { height: calc(var(--vh, 1vh) * 100); }
+
+/* FAB */
+.fab { position: fixed; bottom: 80px; right: 20px; z-index: 1000; }
+.fab-main { width: 56px; height: 56px; background: var(--accent-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+.fab.active .fab-main { transform: rotate(45deg); background: var(--accent-danger); }
+.fab-menu { position: absolute; bottom: 70px; right: 0; display: flex; flex-direction: column; gap: 12px; opacity: 0; transform: scale(0); transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+.fab.active .fab-menu { opacity: 1; transform: scale(1); }
+.fab-item { width: 48px; height: 48px; background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-primary); cursor: pointer; box-shadow: var(--shadow-md); transition: all 0.2s ease; }
+.fab-item:hover { background: var(--accent-primary); color: white; transform: scale(1.1); }
+
+/* Bottom Nav */
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--bg-secondary); border-top: 1px solid var(--border-light); display: flex; justify-content: space-around; align-items: center; z-index: 999; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; background: none; border: none; color: var(--text-secondary); cursor: pointer; transition: all 0.2s ease; min-width: 44px; min-height: 44px; }
+.nav-item.active { color: var(--accent-primary); }
+.nav-item span { font-size: 10px; font-weight: 500; }
+
+/* Radial Menu */
+.radial-menu { position: fixed; width: 120px; height: 120px; transform: translate(-50%, -50%); z-index: 1100; pointer-events: none; }
+.radial-item { position: absolute; width: 40px; height: 40px; background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-lg); transition: all 0.3s ease; pointer-events: all; top: 50%; left: 50%; margin: -20px 0 0 -20px; }
+.radial-item:hover { background: var(--accent-primary); color: white; transform: scale(1.2); }
+
+/* Ripple */
+.ripple { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.3); transform: scale(0); animation: rippleExpand 0.6s ease-out; pointer-events: none; }
+
+/* Enhanced Tools */
+.enhanced-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.enhanced-tool { padding: 12px 8px; background: var(--bg-tertiary); border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 12px; cursor: pointer; transition: all 0.2s ease; min-height: 44px; }
+.enhanced-tool.active { background: var(--accent-primary); color: white; }
+
+/* Achievement UI */
+.achievement-btn { position: relative; width: 40px; height: 40px; background: none; border: none; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: var(--transition); }
+.achievement-count { position: absolute; top: -4px; right: -4px; background: var(--accent-danger); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+.level-display { display: flex; align-items: center; gap: 8px; margin-left: 12px; }
+.level-number { font-size: 12px; font-weight: 600; color: var(--accent-primary); }
+.xp-bar { width: 60px; height: 4px; background: var(--border-light); border-radius: 2px; overflow: hidden; }
+.xp-progress { height: 100%; background: var(--accent-primary); transition: width 0.3s ease; }
+.xp-text { font-size: 10px; color: var(--text-secondary); }
+
+/* Achievement Modal */
+.achievement-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-item { text-align: center; padding: 16px; background: var(--bg-tertiary); border-radius: var(--radius-md); }
+.stat-value { font-size: 24px; font-weight: 700; color: var(--accent-primary); }
+.stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.achievement-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; max-height: 400px; overflow-y: auto; }
+.achievement-card { display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--bg-tertiary); border-radius: var(--radius-md); position: relative; transition: all 0.2s ease; }
+.achievement-card.unlocked { background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary)); color: white; }
+.achievement-card.locked { opacity: 0.6; }
+.achievement-icon { font-size: 32px; flex-shrink: 0; }
+.achievement-info h4 { margin: 0 0 4px 0; font-size: 14px; font-weight: 600; }
+.achievement-info p { margin: 0 0 8px 0; font-size: 12px; opacity: 0.8; }
+.achievement-progress { margin: 8px 0; }
+.progress-bar { width: 100%; height: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: white; transition: width 0.3s ease; }
+.progress-text { font-size: 10px; margin-top: 4px; display: block; }
+.achievement-xp { font-size: 10px; font-weight: 600; opacity: 0.8; }
+.achievement-checkmark { position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; background: white; color: var(--accent-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
+
+/* Particle Canvas */
+.particle-canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 500; }
+
+/* Export Modal */
+.export-options { display: flex; flex-direction: column; gap: 16px; }
+.export-option { display: flex; align-items: center; gap: 16px; padding: 20px; background: var(--bg-tertiary); border: 1px solid var(--border-light); border-radius: var(--radius-lg); cursor: pointer; transition: var(--transition); text-align: left; width: 100%; }
+.export-option:hover { background: var(--accent-primary); color: white; transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.export-icon { font-size: 32px; flex-shrink: 0; }
+.export-info h3 { margin: 0 0 4px 0; font-size: 16px; font-weight: 600; }
+.export-info p { margin: 0; font-size: 14px; opacity: 0.8; }
+
+/* Animations */
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 currentColor; } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+@media (max-width: 768px) {
+  .fab { bottom: 70px; right: 16px; }
+  .achievement-grid { grid-template-columns: 1fr; }
+  .achievement-stats { grid-template-columns: repeat(2, 1fr); }
+  .level-display { display: none; }
+  
+  .canvas-toolbar { display: none; }
+  .color-panel { position: fixed; top: 0; left: -100%; width: 80vw; height: 100vh; z-index: 1000; transition: left 0.3s ease; }
+  .color-panel.open { left: 0; }
+  .tools-panel { position: fixed; top: 0; right: -100%; width: 80vw; height: 100vh; z-index: 1000; transition: right 0.3s ease; }
+  .tools-panel.open { right: 0; }
+  
+  .canvas-area { padding-bottom: 60px; }
+  .canvas-container { padding: 10px; }
+  #main-canvas { max-width: calc(100vw - 20px); max-height: calc(100vh - 200px); }
+  
+  .app-header { padding: 0 16px; height: 50px; }
+  .project-info { display: none; }
+  .header-left { gap: 8px; }
+  .menu-btn { display: flex; }
+}

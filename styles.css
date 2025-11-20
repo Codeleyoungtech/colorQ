@@ -63,7 +63,6 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.5;
-  overflow: hidden;
   transition: var(--transition);
 }
 

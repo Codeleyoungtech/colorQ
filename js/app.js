@@ -26,17 +26,37 @@ class ColorLab {
     this.colorManager = null;
     this.settingsManager = null;
     this.storageManager = null;
+    this.mobileOptimizer = null;
+    this.animationEngine = null;
+    this.gamificationEngine = null;
+    this.enhancedTools = null;
 
     this.init();
   }
 
   async init() {
     try {
-      // Initialize managers
+      // Initialize core managers
       this.storageManager = new StorageManager();
       this.settingsManager = new SettingsManager(this);
       this.colorManager = new ColorManager(this);
       this.canvasEngine = new CanvasEngine(this);
+      
+      // Initialize enhanced modules after DOM is ready
+      setTimeout(() => {
+        if (typeof AnimationEngine !== 'undefined') {
+          this.animationEngine = new AnimationEngine(this);
+        }
+        if (typeof GamificationEngine !== 'undefined') {
+          this.gamificationEngine = new GamificationEngine(this);
+        }
+        if (typeof EnhancedTools !== 'undefined') {
+          this.enhancedTools = new EnhancedTools(this);
+        }
+        if (typeof MobileOptimizer !== 'undefined') {
+          this.mobileOptimizer = new MobileOptimizer(this);
+        }
+      }, 100);
 
       // Load project from URL params
       this.loadProjectFromURL();
@@ -266,14 +286,9 @@ class ColorLab {
   }
 
   showApp() {
-    setTimeout(() => {
-      document.getElementById("loading-screen").style.opacity = "0";
-      setTimeout(() => {
-        document.getElementById("loading-screen").style.display = "none";
-        document.getElementById("app").classList.remove("hidden");
-        document.getElementById("app").classList.add("visible");
-      }, 500);
-    }, 1000);
+    document.getElementById("loading-screen").style.display = "none";
+    document.getElementById("app").classList.remove("hidden");
+    document.getElementById("app").classList.add("visible");
   }
 
   selectTool(tool) {
@@ -287,6 +302,14 @@ class ColorLab {
 
     // Update canvas cursor
     this.canvasEngine.setTool(tool);
+
+    // Track tool usage for gamification
+    if (this.gamificationEngine) {
+      this.gamificationEngine.trackToolUsage(tool);
+    }
+    
+    // Dispatch tool changed event
+    document.dispatchEvent(new CustomEvent('toolChanged', { detail: { tool } }));
 
     this.playSound("select");
   }
@@ -325,6 +348,11 @@ class ColorLab {
 
     // Update project status
     this.updateProjectStatus("Modified");
+
+    // Track color usage for gamification
+    if (this.gamificationEngine) {
+      this.gamificationEngine.trackColorUsage(color);
+    }
 
     // Show selected color feedback
     this.showToast(`Selected ${name || "color"}`, "success");
@@ -385,18 +413,122 @@ class ColorLab {
   }
 
   exportCanvas() {
+    this.showExportModal();
+  }
+
+  showExportModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay export-modal';
+    modal.innerHTML = `
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Export Options</h2>
+          <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-content">
+          <div class="export-options">
+            <button class="export-option" onclick="colorLab.exportAsCLQ()">
+              <div class="export-icon">📁</div>
+              <div class="export-info">
+                <h3>CLQ Project</h3>
+                <p>Save complete project with all data</p>
+              </div>
+            </button>
+            <button class="export-option" onclick="colorLab.exportAsPNG()">
+              <div class="export-icon">🖼️</div>
+              <div class="export-info">
+                <h3>PNG Image</h3>
+                <p>High quality image with transparency</p>
+              </div>
+            </button>
+            <button class="export-option" onclick="colorLab.exportAsJPG()">
+              <div class="export-icon">📷</div>
+              <div class="export-info">
+                <h3>JPG Image</h3>
+                <p>Compressed image for sharing</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('active'), 100);
+  }
+
+  exportAsCLQ() {
     try {
+      const projectName = document.getElementById('project-name')?.textContent || 'Untitled';
       const dataURL = this.canvasEngine.export();
-      const link = document.createElement("a");
-      link.download = `color-lab-${Date.now()}.png`;
+      
+      const projectData = {
+        name: projectName,
+        canvas: dataURL,
+        colors: this.colorManager.recentColors,
+        settings: this.state,
+        created: new Date().toISOString(),
+        version: '1.0'
+      };
+      
+      const blob = new Blob([JSON.stringify(projectData)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.download = `${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.clq`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      
+      URL.revokeObjectURL(link.href);
+      this.showToast(`Project exported as ${projectName}.clq`, 'success');
+      document.querySelector('.export-modal').remove();
+    } catch (error) {
+      this.showToast('Failed to export project', 'error');
+    }
+  }
+
+  exportAsPNG() {
+    try {
+      const projectName = document.getElementById('project-name')?.textContent || 'Untitled';
+      const dataURL = this.canvasEngine.export();
+      const link = document.createElement('a');
+      link.download = `${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
       link.href = dataURL;
       link.click();
-
-      this.showToast("Artwork exported successfully!", "success");
-      this.playSound("export");
+      
+      this.showToast(`Image exported as ${projectName}.png`, 'success');
+      document.querySelector('.export-modal').remove();
     } catch (error) {
-      console.error("Export failed:", error);
-      this.showToast("Failed to export artwork", "error");
+      this.showToast('Failed to export image', 'error');
+    }
+  }
+
+  exportAsJPG() {
+    try {
+      const projectName = document.getElementById('project-name')?.textContent || 'Untitled';
+      const canvas = this.canvasEngine.canvas;
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      tempCtx.fillStyle = 'white';
+      tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+      tempCtx.drawImage(canvas, 0, 0);
+      
+      const dataURL = tempCanvas.toDataURL('image/jpeg', 0.9);
+      const link = document.createElement('a');
+      link.download = `${projectName.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`;
+      link.href = dataURL;
+      link.click();
+      
+      this.showToast(`Image exported as ${projectName}.jpg`, 'success');
+      document.querySelector('.export-modal').remove();
+    } catch (error) {
+      this.showToast('Failed to export image', 'error');
     }
   }
 

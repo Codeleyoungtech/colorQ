@@ -67,6 +67,9 @@ class CanvasEngine {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
+        // Dispatch draw start event for gamification
+        document.dispatchEvent(new CustomEvent('canvasDrawStart'));
+
         if (this.mixMode === 'instant') {
             this.instantMix(state.selectedColor, x, y);
             return;
@@ -283,6 +286,8 @@ class CanvasEngine {
             this.isDrawing = false;
             this.saveState();
             this.updateMixedColorDisplay();
+            // Dispatch draw end event for gamification
+            document.dispatchEvent(new CustomEvent('canvasDrawEnd'));
         }
     }
     
@@ -364,6 +369,7 @@ class CanvasEngine {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.saveState();
         this.hasUnsavedChanges = false;
+        document.dispatchEvent(new CustomEvent('canvasCleared'));
     }
 
     saveState() {
@@ -386,6 +392,7 @@ class CanvasEngine {
         if (this.historyIndex > 0) {
             this.historyIndex--;
             this.restoreState();
+            document.dispatchEvent(new CustomEvent('undoAction'));
         }
     }
 

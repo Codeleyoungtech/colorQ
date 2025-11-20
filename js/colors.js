@@ -247,6 +247,9 @@ class ColorManager {
         
         // Add to recent colors
         this.addToRecent(hex, name);
+        
+        // Dispatch color selected event
+        document.dispatchEvent(new CustomEvent('colorSelected', { detail: { color: hex, name } }));
     }
 
     addToRecent(hex, name) {

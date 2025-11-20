@@ -13,6 +13,7 @@ class HomeApp {
     init() {
         this.loadSettings();
         this.loadProjects();
+        this.loadStats();
         this.setupEventListeners();
         this.renderProjects();
     }
@@ -27,6 +28,14 @@ class HomeApp {
 
     loadProjects() {
         this.projects = this.storageManager.get('projects') || [];
+    }
+
+    loadStats() {
+        const userStats = this.storageManager.get('userStats') || { level: 1, total_xp: 0, login_streak: 0 };
+        document.getElementById('level-stat').textContent = userStats.level;
+        document.getElementById('xp-stat').textContent = userStats.total_xp;
+        document.getElementById('projects-stat').textContent = this.projects.length;
+        document.getElementById('streak-stat').textContent = userStats.login_streak;
     }
 
     saveProjects() {
@@ -85,6 +94,11 @@ class HomeApp {
         // Import button
         document.getElementById('import-btn').addEventListener('click', () => {
             this.importProject();
+        });
+
+        // Achievements button
+        document.getElementById('achievements-btn').addEventListener('click', () => {
+            this.showAchievements();
         });
     }
 
@@ -243,31 +257,89 @@ class HomeApp {
     importProject() {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = 'image/*';
+        input.accept = '.clq,image/*';
         input.onchange = (e) => {
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const project = {
-                        id: Date.now().toString(),
-                        name: file.name.replace(/\.[^/.]+$/, ""),
-                        canvasSize: '800x600',
-                        background: 'white',
-                        createdAt: new Date().toISOString(),
-                        modifiedAt: new Date().toISOString(),
-                        thumbnail: event.target.result,
-                        importedImage: event.target.result
+                if (file.name.endsWith('.clq')) {
+                    // Import CLQ project
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const projectData = JSON.parse(event.target.result);
+                            const project = {
+                                id: Date.now().toString(),
+                                name: projectData.name || file.name.replace('.clq', ''),
+                                canvasSize: '800x600',
+                                background: 'white',
+                                createdAt: new Date().toISOString(),
+                                modifiedAt: new Date().toISOString(),
+                                thumbnail: projectData.canvas,
+                                clqData: projectData
+                            };
+                            
+                            this.projects.unshift(project);
+                            this.saveProjects();
+                            this.renderProjects();
+                            this.showToast(`CLQ project imported: ${project.name}`, 'success');
+                        } catch (error) {
+                            this.showToast('Invalid CLQ file', 'error');
+                        }
                     };
-                    
-                    this.projects.unshift(project);
-                    this.saveProjects();
-                    this.renderProjects();
-                };
-                reader.readAsDataURL(file);
+                    reader.readAsText(file);
+                } else {
+                    // Import image
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const project = {
+                            id: Date.now().toString(),
+                            name: file.name.replace(/\.[^/.]+$/, ""),
+                            canvasSize: '800x600',
+                            background: 'white',
+                            createdAt: new Date().toISOString(),
+                            modifiedAt: new Date().toISOString(),
+                            thumbnail: event.target.result,
+                            importedImage: event.target.result
+                        };
+                        
+                        this.projects.unshift(project);
+                        this.saveProjects();
+                        this.renderProjects();
+                    };
+                    reader.readAsDataURL(file);
+                }
             }
         };
         input.click();
+    }
+
+    showAchievements() {
+        const userStats = this.storageManager.get('userStats') || {};
+        const achievements = userStats.achievements_unlocked || [];
+        this.showToast(`🏆 ${achievements.length} achievements unlocked! Level ${userStats.level || 1}, ${userStats.total_xp || 0} XP`, 'success');
+    }
+
+    showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<div class="toast-message">${message}</div>`;
+        
+        const container = document.getElementById('toast-container') || this.createToastContainer();
+        container.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    createToastContainer() {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+        return container;
     }
 
     formatDate(dateString) {

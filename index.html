@@ -47,6 +47,24 @@
         <div class="welcome-section">
           <h2>Welcome back!</h2>
           <p>Start creating or continue working on your projects</p>
+          <div class="stats-overview" id="stats-overview">
+            <div class="stat-card">
+              <div class="stat-value" id="level-stat">1</div>
+              <div class="stat-label">Level</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="xp-stat">0</div>
+              <div class="stat-label">Total XP</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="projects-stat">0</div>
+              <div class="stat-label">Projects</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="streak-stat">0</div>
+              <div class="stat-label">Streak</div>
+            </div>
+          </div>
         </div>
 
         <div class="actions-section">
@@ -66,19 +84,18 @@
           </button>
 
           <button class="secondary-btn" id="import-btn">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="17,8 12,3 7,8"></polyline>
               <line x1="12" y1="3" x2="12" y2="15"></line>
             </svg>
             Import Project
+          </button>
+          <button class="secondary-btn" id="achievements-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12,2 15.09,8.26 22,9 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9 8.91,8.26"></polygon>
+            </svg>
+            Achievements
           </button>
         </div>
 
