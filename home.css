@@ -140,6 +140,7 @@
         padding: 0 24px;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
     }
     
     .stats-overview::-webkit-scrollbar {
@@ -149,6 +150,11 @@
     .stat-card {
         flex: 0 0 280px;
         scroll-snap-align: center;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
     }
 }
 
@@ -173,13 +179,26 @@
     .stat-card {
         position: relative;
         cursor: default;
-        transform: none !important;
     }
     
     .stat-card:hover {
-        transform: translateY(-2px) !important;
+        transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
         border-color: var(--accent-primary);
+    }
+}
+
+@media (max-width: 768px) {
+    .stat-card {
+        transform: none !important;
+        cursor: default;
+        pointer-events: none;
+    }
+    
+    .stat-card:hover {
+        transform: none !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border-color: var(--border-light);
     }
 }
 
