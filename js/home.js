@@ -411,6 +411,14 @@ class HomeController {
       });
     });
 
+    // Restart onboarding button
+    const restartOnboardingBtn = document.getElementById('restart-onboarding');
+    if (restartOnboardingBtn) {
+      restartOnboardingBtn.addEventListener('click', () => {
+        this.restartOnboarding();
+      });
+    }
+
     // Other settings
     const animationSpeed = document.getElementById('animation-speed');
     if (animationSpeed) {
@@ -868,6 +876,28 @@ class HomeController {
     }
   }
 
+  restartOnboarding() {
+    // Close settings modal
+    const settingsModal = document.getElementById('settings-modal');
+    if (settingsModal) {
+      settingsModal.classList.remove('active');
+    }
+    
+    // Reset onboarding and start it
+    if (this.onboardingSystem) {
+      this.onboardingSystem.resetOnboarding();
+    }
+    
+    setTimeout(() => {
+      if (!this.onboardingSystem) {
+        this.onboardingSystem = new window.OnboardingSystem(this);
+      }
+      this.onboardingSystem.forceStart();
+    }, 300);
+    
+    this.showToast('Tutorial restarted!', 'success');
+  }
+
   updateSetting(key, value) {
     const settings = JSON.parse(localStorage.getItem('colorQ_settings') || '{}');
     settings[key] = value;
@@ -1185,6 +1215,9 @@ class HomeController {
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   window.homeController = new HomeController();
+  
+  // Initialize onboarding system after DOM is ready
+  window.homeController.onboardingSystem = new window.OnboardingSystem(window.homeController);
   
   // Initialize quest system
   if (typeof DailyQuestSystem !== 'undefined') {
