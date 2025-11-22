@@ -6,6 +6,8 @@
     <title>colorQ - Home</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="home.css" />
+    <link rel="stylesheet" href="css/quest-styles.css" />
+    <link rel="stylesheet" href="css/progress-realm.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -36,12 +38,25 @@
       <!-- Main Content -->
       <main class="home-main">
         <div class="welcome-section">
-          <h2>Welcome back!</h2>
-          <p>Start creating or continue working on your projects</p>
+          <h2>Welcome back, Artist!</h2>
+          <div class="streak-display" id="streak-display">
+            <div class="streak-flame">
+              <span class="flame-icon">🔥</span>
+              <span class="streak-number" id="streak-number">0</span>
+            </div>
+            <div class="streak-text">Day Streak - Don't break the chain!</div>
+          </div>
+          <p>Ready for today's quest?</p>
           <div class="stats-overview" id="stats-overview">
-            <div class="stat-card">
+            <div class="stat-card level-card" id="level-card">
               <div class="stat-value" id="level-stat">1</div>
               <div class="stat-label">Level</div>
+              <div class="level-progress-ring">
+                <svg class="progress-ring" width="60" height="60">
+                  <circle class="progress-ring-bg" cx="30" cy="30" r="25"></circle>
+                  <circle class="progress-ring-fill" cx="30" cy="30" r="25" id="level-progress"></circle>
+                </svg>
+              </div>
             </div>
             <div class="stat-card">
               <div class="stat-value" id="xp-stat">0</div>
@@ -52,13 +67,20 @@
               <div class="stat-label">Projects</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value" id="streak-stat">0</div>
-              <div class="stat-label">Streak</div>
+              <div class="stat-value" id="gems-stat">0</div>
+              <div class="stat-label">Gems</div>
             </div>
           </div>
         </div>
 
         <div class="actions-section">
+          <button class="quest-btn" id="daily-quest-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12,2 15.09,8.26 22,9 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9 8.91,8.26"></polygon>
+            </svg>
+            🎯 Today's Quest
+          </button>
+          
           <button class="primary-btn" id="new-project-btn">
             <svg
               width="24"
@@ -88,6 +110,7 @@
             </svg>
             Achievements
           </button>
+
         </div>
 
         <div class="projects-section">
@@ -227,7 +250,35 @@
       </div>
     </div>
 
+    <!-- Progress Realm -->
+    <div id="progress-realm" class="progress-realm">
+      <div class="realm-header">
+        <button class="realm-back" id="realm-back">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="realm-progress">
+          <div class="progress-text" id="realm-progress-text">Level 1 → Level 2 • 0 / 100 XP</div>
+          <div class="streak-indicator">
+            <span class="fire-icon">🔥</span>
+            <span id="streak-days">0</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="realm-content" id="realm-content">
+        <div class="energy-thread" id="energy-thread"></div>
+        <div class="level-cards-container" id="level-cards"></div>
+      </div>
+    </div>
+
     <script src="js/storage.js"></script>
+    <script src="js/gamification.js"></script>
+    <script src="js/daily-quest.js"></script>
+    <script src="js/gems-system.js"></script>
+    <script src="js/level-system.js"></script>
+    <script src="js/progress-realm.js"></script>
     <script src="js/home.js"></script>
   </body>
 </html>

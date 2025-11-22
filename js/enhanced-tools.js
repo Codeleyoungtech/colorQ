@@ -22,26 +22,15 @@ class EnhancedTools {
   }
 
   createToolUI() {
-    const toolsPanel = document.querySelector('.tools-panel .tool-section');
-    const enhancedSection = document.createElement('div');
-    enhancedSection.className = 'tool-section';
-    enhancedSection.innerHTML = `
-      <h3>Enhanced Brushes</h3>
-      <div class="enhanced-tools">
-        <button class="enhanced-tool" data-tool="rainbow">🌈 Rainbow</button>
-        <button class="enhanced-tool" data-tool="watercolor">💧 Watercolor</button>
-        <button class="enhanced-tool" data-tool="neon">✨ Neon</button>
-        <button class="enhanced-tool" data-tool="stamp">⭐ Stamps</button>
-        <button class="enhanced-tool" data-tool="smudge">👆 Smudge</button>
-        <button class="enhanced-tool" data-tool="pattern">📐 Pattern</button>
-      </div>
-    `;
-    
-    toolsPanel.appendChild(enhancedSection);
-    
-    enhancedSection.addEventListener('click', (e) => {
-      const tool = e.target.dataset.tool;
-      if (tool) this.selectTool(tool);
+    // Enhanced tools are now in HTML, just add event listeners
+    const enhancedTools = document.querySelectorAll('.enhanced-tool');
+    enhancedTools.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const tool = e.target.dataset.tool;
+        if (tool && this.app.selectEnhancedTool) {
+          this.app.selectEnhancedTool(tool);
+        }
+      });
     });
   }
 

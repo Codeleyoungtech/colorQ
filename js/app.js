@@ -30,6 +30,11 @@ class ColorLab {
     this.animationEngine = null;
     this.gamificationEngine = null;
     this.enhancedTools = null;
+    this.dailyQuestSystem = null;
+    this.gemsSystem = null;
+    this.eventsSystem = null;
+    this.shopSystem = null;
+    this.onboardingSystem = null;
 
     this.init();
   }
@@ -56,6 +61,24 @@ class ColorLab {
         if (typeof MobileOptimizer !== 'undefined') {
           this.mobileOptimizer = new MobileOptimizer(this);
         }
+        if (typeof DailyQuestSystem !== 'undefined') {
+          this.dailyQuestSystem = new DailyQuestSystem(this);
+        }
+        if (typeof GemsSystem !== 'undefined') {
+          this.gemsSystem = new GemsSystem(this);
+        }
+        if (typeof EventsSystem !== 'undefined') {
+          this.eventsSystem = new EventsSystem(this);
+        }
+        if (typeof ShopSystem !== 'undefined') {
+          this.shopSystem = new ShopSystem(this);
+        }
+        if (typeof OnboardingSystem !== 'undefined') {
+          this.onboardingSystem = new OnboardingSystem(this);
+        }
+        
+        // Add quest info button to toolbar
+        this.addQuestInfoButton();
       }, 100);
 
       // Load project from URL params
@@ -76,6 +99,33 @@ class ColorLab {
       const clqData = localStorage.getItem('loadCLQ');
       if (clqData) {
         this.loadCLQProject();
+      }
+      
+      // Check for quest parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('quest') === 'true') {
+        setTimeout(() => {
+          if (this.dailyQuestSystem) {
+            this.dailyQuestSystem.showQuestModal();
+          } else {
+            // Initialize quest system if not already done
+            this.dailyQuestSystem = new DailyQuestSystem(this);
+            setTimeout(() => this.dailyQuestSystem.showQuestModal(), 500);
+          }
+        }, 1000);
+      }
+      
+      // Clear canvas for new project
+      if (urlParams.get('new') === 'true') {
+        setTimeout(() => {
+          this.canvasEngine.ctx.clearRect(0, 0, this.canvasEngine.canvas.width, this.canvasEngine.canvas.height);
+          this.canvasEngine.saveState();
+        }, 300);
+      }
+      
+      // Load specific project if requested
+      if (urlParams.get('load')) {
+        this.loadSpecificProject();
       }
       
       // Show app
@@ -210,18 +260,33 @@ class ColorLab {
     });
 
     // Effects
-    document.getElementById("glow-effect").addEventListener("change", (e) => {
-      this.toggleEffect("glow", e.target.checked);
-    });
+    const glowEffect = document.getElementById("glow-effect");
+    if (glowEffect) {
+      glowEffect.addEventListener("change", (e) => {
+        this.toggleEffect("glow", e.target.checked);
+      });
+    }
 
-    document
-      .getElementById("sparkle-effect")
-      .addEventListener("change", (e) => {
+    const sparkleEffect = document.getElementById("sparkle-effect");
+    if (sparkleEffect) {
+      sparkleEffect.addEventListener("change", (e) => {
         this.toggleEffect("sparkle", e.target.checked);
       });
+    }
 
-    document.getElementById("symmetry-mode").addEventListener("change", (e) => {
-      this.toggleEffect("symmetry", e.target.checked);
+    const symmetryMode = document.getElementById("symmetry-mode");
+    if (symmetryMode) {
+      symmetryMode.addEventListener("change", (e) => {
+        this.toggleEffect("symmetry", e.target.checked);
+      });
+    }
+
+    // Enhanced tools
+    document.querySelectorAll('.enhanced-tool').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const tool = e.target.dataset.tool;
+        this.selectEnhancedTool(tool);
+      });
     });
 
     // Tool actions
@@ -294,12 +359,17 @@ class ColorLab {
 
   selectTool(tool) {
     this.state.selectedTool = tool;
+    this.state.enhancedTool = null; // Clear enhanced tool
 
     // Update UI
     document.querySelectorAll(".tool-btn").forEach((btn) => {
       btn.classList.remove("active");
     });
-    document.querySelector(`[data-tool="${tool}"]`).classList.add("active");
+    document.querySelectorAll(".enhanced-tool").forEach((btn) => {
+      btn.classList.remove("active");
+    });
+    const toolBtn = document.querySelector(`[data-tool="${tool}"]`);
+    if (toolBtn) toolBtn.classList.add("active");
 
     // Update canvas cursor
     this.canvasEngine.setTool(tool);
@@ -312,6 +382,41 @@ class ColorLab {
     // Dispatch tool changed event
     document.dispatchEvent(new CustomEvent('toolChanged', { detail: { tool } }));
 
+    this.playSound("select");
+  }
+
+  selectEnhancedTool(tool) {
+    // Check if tool is already active - if so, deactivate it
+    if (this.state.enhancedTool === tool) {
+      this.state.enhancedTool = null;
+      this.state.selectedTool = 'brush';
+      
+      // Update UI - deactivate enhanced tool
+      document.querySelectorAll(".enhanced-tool").forEach((btn) => {
+        btn.classList.remove("active");
+      });
+      
+      this.canvasEngine.setEnhancedTool(null);
+      this.showToast(`Enhanced brush deactivated`, "success");
+    } else {
+      // Activate new enhanced tool
+      this.state.selectedTool = 'brush';
+      this.state.enhancedTool = tool;
+
+      // Update UI
+      document.querySelectorAll(".tool-btn").forEach((btn) => {
+        btn.classList.remove("active");
+      });
+      document.querySelectorAll(".enhanced-tool").forEach((btn) => {
+        btn.classList.remove("active");
+      });
+      document.querySelector(`[data-tool="brush"]`).classList.add("active");
+      document.querySelector(`.enhanced-tool[data-tool="${tool}"]`).classList.add("active");
+
+      this.canvasEngine.setEnhancedTool(tool);
+      this.showToast(`${tool} brush selected`, "success");
+    }
+    
     this.playSound("select");
   }
 
@@ -330,7 +435,18 @@ class ColorLab {
 
   toggleEffect(effect, enabled) {
     this.state.effects[effect] = enabled;
-    this.canvasEngine.setEffect(effect, enabled);
+    
+    // Apply effect to canvas engine
+    if (this.canvasEngine && this.canvasEngine.setEffect) {
+      this.canvasEngine.setEffect(effect, enabled);
+    }
+    
+    // Apply effect to enhanced tools if available
+    if (this.enhancedTools && this.enhancedTools.setEffect) {
+      this.enhancedTools.setEffect(effect, enabled);
+    }
+    
+    this.showToast(`${effect} effect ${enabled ? 'enabled' : 'disabled'}`, 'success');
     this.playSound("toggle");
   }
 
@@ -409,15 +525,10 @@ class ColorLab {
     const randomColor = this.colorManager.getRandomColor();
     this.selectColor(randomColor.hex, randomColor.name);
     
-    // Create surprise effect if canvas engine supports it
-    if (this.canvasEngine.createSurpriseEffect) {
-      this.canvasEngine.createSurpriseEffect();
-    }
-    
     // Show instructions for what to do next
     this.showToast(`🎨 ${randomColor.name} selected! Start drawing to create art!`, "success");
     
-    // Add some visual feedback
+    // Add some visual feedback without paint splashes
     if (this.animationEngine) {
       this.animationEngine.createParticleExplosion(400, 300, randomColor.hex);
     }
@@ -427,6 +538,122 @@ class ColorLab {
 
   exportCanvas() {
     this.showExportModal();
+  }
+
+  shareArtwork() {
+    if (this.canvasEngine && this.canvasEngine.shareArtwork) {
+      this.canvasEngine.shareArtwork();
+      
+      // Track sharing for achievements
+      if (this.gamificationEngine) {
+        this.gamificationEngine.trackSharing();
+      }
+    } else {
+      this.exportCanvas();
+    }
+  }
+
+  addQuestInfoButton() {
+    setTimeout(() => {
+      const toolsPanel = document.querySelector('.tools-panel');
+      if (toolsPanel && !document.getElementById('quest-info-btn')) {
+        const questSection = document.createElement('div');
+        questSection.className = 'tool-section';
+        questSection.innerHTML = `
+          <h3>Daily Quest</h3>
+          <button class="tool-action-btn" id="quest-info-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12,2 15.09,8.26 22,9 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9 8.91,8.26"></polygon>
+            </svg>
+            Quest Info
+          </button>
+          <button class="tool-action-btn" id="start-quest-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M8 12l2 2 4-4"></path>
+            </svg>
+            Start Quest
+          </button>
+        `;
+        
+        toolsPanel.insertBefore(questSection, toolsPanel.firstChild);
+        
+        document.getElementById('quest-info-btn').addEventListener('click', () => {
+          this.showQuestInfo();
+        });
+        
+        document.getElementById('start-quest-btn').addEventListener('click', () => {
+          if (this.dailyQuestSystem) {
+            this.dailyQuestSystem.showQuestModal();
+          }
+        });
+      }
+    }, 500);
+  }
+
+  showQuestInfo() {
+    const quest = this.dailyQuestSystem ? this.dailyQuestSystem.getCurrentQuest() : null;
+    
+    if (!quest) {
+      this.showToast('No quest available', 'info');
+      return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay quest-info-modal active';
+    modal.innerHTML = `
+      <div class="modal">
+        <div class="modal-header">
+          <h2>🎯 Today's Quest Info</h2>
+          <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+        </div>
+        <div class="modal-content">
+          <div class="quest-details">
+            <h3>${quest.name}</h3>
+            <div class="quest-status">
+              <span class="status-badge ${quest.completed ? 'completed' : 'active'}">
+                ${quest.completed ? '✅ Completed' : '⏳ Active'}
+              </span>
+            </div>
+            <div class="quest-colors">
+              <h4>Use these colors:</h4>
+              <div class="color-palette">
+                ${quest.colors.map(color => 
+                  `<div class="color-swatch" style="background: ${color}" title="${color}"></div>`
+                ).join('')}
+              </div>
+            </div>
+            <div class="quest-reward">
+              <h4>Reward:</h4>
+              <p>💎 ${quest.gems} Gems + ${quest.gems} XP</p>
+            </div>
+            <div class="quest-difficulty">
+              <h4>Difficulty:</h4>
+              <p>${quest.difficulty.toUpperCase()}</p>
+            </div>
+            ${quest.completed ? 
+              `<div class="quest-score">
+                <h4>Your Score:</h4>
+                <p>${quest.score}% similarity</p>
+              </div>` : 
+              `<div class="quest-timer-info">
+                <h4>Time Limit:</h4>
+                <p>3 minutes</p>
+              </div>`
+            }
+          </div>
+          <div class="modal-actions">
+            <button class="secondary-btn" onclick="this.closest('.modal-overlay').remove()">Close</button>
+            ${!quest.completed ? 
+              '<button class="primary-btn" onclick="colorLab.dailyQuestSystem.showQuestModal(); this.closest(\'.modal-overlay\').remove();">Start Quest</button>' : 
+              '<button class="primary-btn" onclick="this.closest(\'.modal-overlay\').remove()">Done for Today</button>'
+            }
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
   }
 
   showExportModal() {
@@ -841,6 +1068,68 @@ class ColorLab {
     // Apply theme change
     if (newSettings.theme) {
       document.body.setAttribute("data-theme", newSettings.theme);
+    }
+  }
+
+  loadSpecificProject() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectId = urlParams.get('load');
+    
+    if (projectId) {
+      const projectData = localStorage.getItem('loadProject');
+      if (projectData) {
+        try {
+          const project = JSON.parse(projectData);
+          
+          // Update project name
+          const nameEl = document.getElementById('project-name');
+          if (nameEl && project.name) {
+            nameEl.textContent = project.name;
+          }
+          
+          // Load canvas data
+          if (project.canvas) {
+            setTimeout(() => {
+              const img = new Image();
+              img.onload = () => {
+                this.canvasEngine.ctx.clearRect(0, 0, this.canvasEngine.canvas.width, this.canvasEngine.canvas.height);
+                this.canvasEngine.ctx.drawImage(img, 0, 0);
+                this.canvasEngine.saveState();
+                
+                // Hide welcome overlay
+                const overlay = document.getElementById('canvas-overlay');
+                if (overlay) overlay.classList.add('hidden');
+              };
+              img.src = project.canvas;
+            }, 500);
+          }
+          
+          this.showToast(`Project loaded: ${project.name}`, 'success');
+          localStorage.removeItem('loadProject');
+        } catch (error) {
+          console.error('Failed to load project:', error);
+          this.showToast('Failed to load project', 'error');
+          localStorage.removeItem('loadProject');
+        }
+      }
+    }
+  }
+
+  enableQuestMode() {
+    // Add quest styling to the app
+    document.body.classList.add('quest-mode');
+    
+    // Update project name styling
+    const projectName = document.getElementById('project-name');
+    if (projectName) {
+      projectName.style.color = '#FF2D92';
+      projectName.style.fontWeight = 'bold';
+    }
+    
+    // Update header background
+    const header = document.querySelector('.app-header');
+    if (header) {
+      header.style.background = 'linear-gradient(135deg, #FF2D92, #FF6B35)';
     }
   }
 }

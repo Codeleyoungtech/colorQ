@@ -402,13 +402,94 @@ class GamificationEngine {
     this.userStats.achievements_unlocked.push(achievementId);
     
     this.awardXP(achievement.xp);
+    
+    // Full-screen achievement celebration
+    this.showFullScreenAchievement(achievement);
+    
+    // Trigger confetti and sound
     if (this.app.animationEngine) {
       this.app.animationEngine.celebrateAchievement(achievement.name);
     }
-    this.app.showToast(`🏆 Achievement: ${achievement.name}!`, 'success');
+    
+    // Haptic feedback
+    this.triggerHapticFeedback();
+    
+    // Achievement sound
+    this.playAchievementSound();
     
     this.saveUserStats();
     this.updateAchievementUI();
+  }
+  
+  showFullScreenAchievement(achievement) {
+    const modal = document.createElement('div');
+    modal.className = 'achievement-celebration-modal';
+    modal.innerHTML = `
+      <div class="achievement-celebration">
+        <div class="achievement-icon-large">${achievement.icon}</div>
+        <h2>Achievement Unlocked!</h2>
+        <div class="achievement-details">
+          <h3>${achievement.name}</h3>
+          <p>${achievement.description}</p>
+          <div class="achievement-reward">+${achievement.xp} XP</div>
+        </div>
+        <button class="celebration-close" onclick="this.closest('.achievement-celebration-modal').remove()">Awesome!</button>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      if (modal.parentElement) {
+        modal.remove();
+      }
+    }, 5000);
+  }
+  
+  triggerHapticFeedback() {
+    if ('vibrate' in navigator) {
+      navigator.vibrate([100, 50, 100, 50, 200]);
+    }
+  }
+  
+  playAchievementSound() {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Create a celebratory chord
+      const frequencies = [523.25, 659.25, 783.99]; // C, E, G
+      
+      frequencies.forEach((freq, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.8);
+        
+        oscillator.start(audioContext.currentTime + index * 0.1);
+        oscillator.stop(audioContext.currentTime + 0.8 + index * 0.1);
+      });
+    } catch (error) {
+      console.log('Audio not available');
+    }
+  }
+  
+  trackSharing() {
+    this.userStats.shares_count = (this.userStats.shares_count || 0) + 1;
+    this.saveUserStats();
+    
+    // Check for sharing achievements
+    if (this.userStats.shares_count >= 1 && !this.hasAchievement('first_share')) {
+      this.unlockAchievement('first_share');
+    }
   }
 
   updateAchievementProgress(achievementId, increment = 1) {
