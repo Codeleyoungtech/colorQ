@@ -19,6 +19,8 @@ class HomeController {
     this.updateStreakDisplay();
     this.checkDailyLogin();
     this.loadRecentProjects();
+    this.currentIndex = 0;
+    document.getElementById('card-counter')?.textContent && (document.getElementById('card-counter').textContent = '1');
   }
 
   loadStats() {
@@ -486,30 +488,66 @@ class HomeController {
   }
 
   setupStatCardSwipes() {
+    // Only enable on mobile
+    if (window.innerWidth > 768) return;
+    
     const cards = document.querySelectorAll('.stat-card');
+    const counter = document.getElementById('card-counter');
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas?.getContext('2d');
     let currentIndex = 0;
+    this.particles = [];
+    
+    if (canvas) {
+      canvas.width = 320;
+      canvas.height = 160;
+      this.animateParticles(ctx);
+    }
+    
+    setTimeout(() => this.demoSwipe(), 3000);
     
     cards.forEach((card, index) => {
       let startY = 0;
       let currentY = 0;
       let isDragging = false;
+      let velocity = 0;
+      let lastY = 0;
+      let lastTime = 0;
       
       const handleStart = (e) => {
         if (index !== currentIndex) return;
         isDragging = true;
-        startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+        const clientY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+        startY = clientY;
+        lastY = clientY;
+        lastTime = Date.now();
+        velocity = 0;
         card.classList.add('swiping');
+        this.hapticFeedback('light');
+        document.querySelector('.swipe-hint')?.style.setProperty('opacity', '0');
       };
       
       const handleMove = (e) => {
         if (!isDragging || index !== currentIndex) return;
         e.preventDefault();
-        currentY = (e.type === 'mousemove' ? e.clientY : e.touches[0].clientY) - startY;
+        
+        const clientY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
+        const now = Date.now();
+        currentY = clientY - startY;
+        velocity = (clientY - lastY) / (now - lastTime);
+        lastY = clientY;
+        lastTime = now;
+        
+        const progress = Math.min(Math.abs(currentY) / 100, 1);
         
         if (currentY < 0) {
-          const progress = Math.min(Math.abs(currentY) / 100, 1);
-          card.style.transform = `translateY(${currentY}px) rotateX(${progress * 20}deg) scale(${1 - progress * 0.2})`;
-          card.style.opacity = 1 - progress * 0.5;
+          card.style.transform = `translateY(${currentY}px) rotateX(${progress * 45}deg) scale(${1 - progress * 0.4})`;
+          card.style.opacity = 1 - progress * 0.7;
+          this.createParticles(clientY, progress, 'up');
+        } else if (currentY > 0) {
+          card.style.transform = `translateY(${currentY}px) rotateX(${-progress * 45}deg) scale(${1 - progress * 0.4})`;
+          card.style.opacity = 1 - progress * 0.7;
+          this.createParticles(clientY, progress, 'down');
         }
       };
       
@@ -518,20 +556,37 @@ class HomeController {
         isDragging = false;
         card.classList.remove('swiping');
         
-        if (currentY < -80) {
+        const threshold = 60;
+        const velocityThreshold = 0.5;
+        
+        if ((currentY < -threshold || velocity < -velocityThreshold) && currentY < 0) {
           card.classList.add('swiped-up');
           currentIndex = (currentIndex + 1) % cards.length;
+          if (counter) counter.textContent = currentIndex + 1;
+          this.hapticFeedback('medium');
           this.updateCardStack();
           setTimeout(() => {
             card.classList.remove('swiped-up');
             card.style.transform = '';
             card.style.opacity = '';
-          }, 300);
+          }, 600);
+        } else if ((currentY > threshold || velocity > velocityThreshold) && currentY > 0) {
+          card.classList.add('swiped-down');
+          currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+          if (counter) counter.textContent = currentIndex + 1;
+          this.hapticFeedback('medium');
+          this.updateCardStack();
+          setTimeout(() => {
+            card.classList.remove('swiped-down');
+            card.style.transform = '';
+            card.style.opacity = '';
+          }, 600);
         } else {
           card.style.transform = '';
           card.style.opacity = '';
         }
         currentY = 0;
+        velocity = 0;
       };
       
       card.addEventListener('mousedown', handleStart);
@@ -543,12 +598,82 @@ class HomeController {
     });
   }
   
+  createParticles(y, progress, direction) {
+    if (!this.particles) this.particles = [];
+    
+    for (let i = 0; i < 3; i++) {
+      this.particles.push({
+        x: 160 + (Math.random() - 0.5) * 100,
+        y: y - 100,
+        vx: (Math.random() - 0.5) * 4,
+        vy: direction === 'up' ? -Math.random() * 3 : Math.random() * 3,
+        life: 1,
+        decay: 0.02,
+        color: direction === 'up' ? '#3b82f6' : '#f59e0b',
+        size: Math.random() * 4 + 2
+      });
+    }
+  }
+  
+  animateParticles(ctx) {
+    if (!ctx || !this.particles) return;
+    
+    ctx.clearRect(0, 0, 320, 160);
+    
+    this.particles = this.particles.filter(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= p.decay;
+      
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+      
+      return p.life > 0;
+    });
+    
+    requestAnimationFrame(() => this.animateParticles(ctx));
+  }
+  
+  hapticFeedback(type) {
+    if (navigator.vibrate) {
+      const patterns = {
+        light: [10],
+        medium: [20],
+        heavy: [30]
+      };
+      navigator.vibrate(patterns[type] || patterns.light);
+    }
+  }
+  
+  demoSwipe() {
+    const topCard = document.querySelector('.stat-card');
+    if (!topCard) return;
+    
+    topCard.style.transform = 'translateY(-30px) rotateX(15deg) scale(0.9)';
+    topCard.style.opacity = '0.7';
+    
+    setTimeout(() => {
+      topCard.style.transform = '';
+      topCard.style.opacity = '';
+    }, 1000);
+  }
+  
   updateCardStack() {
     const cards = document.querySelectorAll('.stat-card');
+    const transforms = [
+      'translateY(0px) translateZ(0px) rotateX(0deg) scale(1)',
+      'translateY(8px) translateZ(-20px) rotateX(2deg) scale(0.95)',
+      'translateY(16px) translateZ(-40px) rotateX(4deg) scale(0.9)',
+      'translateY(24px) translateZ(-60px) rotateX(6deg) scale(0.85)'
+    ];
+    
     cards.forEach((card, index) => {
-      const stackIndex = (index + cards.length - 1) % cards.length;
+      const stackIndex = (index + cards.length - this.currentIndex) % cards.length;
       card.style.zIndex = cards.length - stackIndex;
-      card.style.transform = `translateY(${stackIndex * 4}px) scale(${1 - stackIndex * 0.02})`;
+      card.style.transform = transforms[stackIndex];
     });
   }
 

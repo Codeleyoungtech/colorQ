@@ -191,6 +191,10 @@
   gap: 32px;
   max-width: 400px;
   margin: 0 auto;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  perspective: 1000px;
 }
 
 .level-card-item {
@@ -203,6 +207,9 @@
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform, opacity, box-shadow;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .level-card-item::before {
@@ -227,7 +234,78 @@
 .level-card-item:hover {
   transform: translateY(-8px) scale(1.02);
   border-color: rgba(255, 45, 146, 0.3);
-  box-shadow: 0 20px 60px rgba(255, 45, 146, 0.2);
+  box-shadow: 0 20px 60px rgba(255, 45, 146, 0.2), 0 0 0 1px rgba(255, 45, 146, 0.1);
+}
+
+/* Card stacking effects */
+.level-card-item:nth-child(even) {
+  transform-origin: center right;
+}
+
+.level-card-item:nth-child(odd) {
+  transform-origin: center left;
+}
+
+/* Enhanced depth shadows for stacking */
+.level-card-item.stacked {
+  box-shadow: 
+    0 5px 15px rgba(0, 0, 0, 0.1),
+    0 15px 35px rgba(0, 0, 0, 0.1),
+    0 20px 65px rgba(0, 0, 0, 0.1);
+}
+
+/* Drag state */
+.level-cards-container.dragging .level-card-item {
+  transition: none;
+  pointer-events: none;
+}
+
+.level-cards-container.dragging .level-card-item:not(.dragging) {
+  filter: blur(1px);
+  opacity: 0.8;
+}
+
+/* Trail particle styles */
+.trail-particle {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background: linear-gradient(45deg, #FF2D92, #FF6B35);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  box-shadow: 0 0 10px rgba(255, 45, 146, 0.6);
+}
+
+@keyframes trailFade {
+  0% { 
+    opacity: 1; 
+    transform: translateX(-50%) scale(1) rotate(0deg); 
+  }
+  100% { 
+    opacity: 0; 
+    transform: translateX(-50%) scale(0.3) rotate(180deg); 
+  }
+}
+
+/* Physics-based animations */
+@keyframes cardBounce {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.level-card-item.bouncing {
+  animation: cardBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Velocity-based effects */
+.level-card-item.fast-swipe {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.level-card-item.slow-swipe {
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .level-card-item.milestone {
@@ -384,10 +462,12 @@
   
   .level-cards-container {
     gap: 24px;
+    touch-action: pan-y;
   }
   
   .level-card-item {
     padding: 24px;
+    touch-action: none;
   }
   
   .level-number {
@@ -400,6 +480,17 @@
   
   .progress-text {
     font-size: 14px;
+  }
+  
+  /* Enhanced mobile swipe feedback */
+  .trail-particle {
+    width: 8px;
+    height: 8px;
+  }
+  
+  /* Larger touch targets for mobile */
+  .level-card-item {
+    min-height: 120px;
   }
 }
 
@@ -415,8 +506,19 @@
   .currentGlow,
   .statusPulse,
   .flicker,
-  .float {
+  .float,
+  .cardBounce,
+  .trailFade {
     animation: none;
+  }
+  
+  .level-card-item.fast-swipe,
+  .level-card-item.slow-swipe {
+    transition: transform 0.3s ease;
+  }
+  
+  .trail-particle {
+    display: none;
   }
 }
 
