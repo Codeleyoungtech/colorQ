@@ -56,25 +56,45 @@
 }
 
 .stats-overview {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    max-width: 400px;
+    position: relative;
+    width: 280px;
+    height: 120px;
     margin: 0 auto;
+    perspective: 1000px;
 }
 
 .stat-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: var(--bg-secondary);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-lg);
     padding: 16px;
     text-align: center;
-    transition: var(--transition);
+    cursor: grab;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    user-select: none;
+    touch-action: pan-y;
 }
 
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+.stat-card:nth-child(1) { z-index: 4; transform: translateY(0px) scale(1); }
+.stat-card:nth-child(2) { z-index: 3; transform: translateY(4px) scale(0.98); }
+.stat-card:nth-child(3) { z-index: 2; transform: translateY(8px) scale(0.96); }
+.stat-card:nth-child(4) { z-index: 1; transform: translateY(12px) scale(0.94); }
+
+.stat-card.swiping {
+    transition: none;
+    cursor: grabbing;
+}
+
+.stat-card.swiped-up {
+    transform: translateY(-200px) rotateX(20deg) scale(0.8);
+    opacity: 0;
+    pointer-events: none;
 }
 
 .stat-value {
@@ -408,8 +428,8 @@
     }
     
     .stats-overview {
-        grid-template-columns: repeat(2, 1fr);
-        max-width: 300px;
+        width: 260px;
+        height: 110px;
     }
     
     .stat-value {

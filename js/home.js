@@ -132,6 +132,9 @@ class HomeController {
   }
 
   setupEventListeners() {
+    // Setup stat card swipe interactions
+    this.setupStatCardSwipes();
+    
     // New Project button
     const newProjectBtn = document.getElementById('new-project-btn');
     if (newProjectBtn) {
@@ -480,6 +483,73 @@ class HomeController {
         `;
       }
     }
+  }
+
+  setupStatCardSwipes() {
+    const cards = document.querySelectorAll('.stat-card');
+    let currentIndex = 0;
+    
+    cards.forEach((card, index) => {
+      let startY = 0;
+      let currentY = 0;
+      let isDragging = false;
+      
+      const handleStart = (e) => {
+        if (index !== currentIndex) return;
+        isDragging = true;
+        startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+        card.classList.add('swiping');
+      };
+      
+      const handleMove = (e) => {
+        if (!isDragging || index !== currentIndex) return;
+        e.preventDefault();
+        currentY = (e.type === 'mousemove' ? e.clientY : e.touches[0].clientY) - startY;
+        
+        if (currentY < 0) {
+          const progress = Math.min(Math.abs(currentY) / 100, 1);
+          card.style.transform = `translateY(${currentY}px) rotateX(${progress * 20}deg) scale(${1 - progress * 0.2})`;
+          card.style.opacity = 1 - progress * 0.5;
+        }
+      };
+      
+      const handleEnd = () => {
+        if (!isDragging || index !== currentIndex) return;
+        isDragging = false;
+        card.classList.remove('swiping');
+        
+        if (currentY < -80) {
+          card.classList.add('swiped-up');
+          currentIndex = (currentIndex + 1) % cards.length;
+          this.updateCardStack();
+          setTimeout(() => {
+            card.classList.remove('swiped-up');
+            card.style.transform = '';
+            card.style.opacity = '';
+          }, 300);
+        } else {
+          card.style.transform = '';
+          card.style.opacity = '';
+        }
+        currentY = 0;
+      };
+      
+      card.addEventListener('mousedown', handleStart);
+      card.addEventListener('touchstart', handleStart, { passive: false });
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('touchmove', handleMove, { passive: false });
+      document.addEventListener('mouseup', handleEnd);
+      document.addEventListener('touchend', handleEnd);
+    });
+  }
+  
+  updateCardStack() {
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach((card, index) => {
+      const stackIndex = (index + cards.length - 1) % cards.length;
+      card.style.zIndex = cards.length - stackIndex;
+      card.style.transform = `translateY(${stackIndex * 4}px) scale(${1 - stackIndex * 0.02})`;
+    });
   }
 
   showToast(message, type = 'info') {
