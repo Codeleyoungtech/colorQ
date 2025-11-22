@@ -84,10 +84,13 @@ class CanvasEngine {
         const x = (e.clientX - rect.left) * scaleX;
         const y = (e.clientY - rect.top) * scaleY;
 
-        // Store current tool state to prevent switching during draw
+        // Store ALL drawing state to prevent switching during draw - LOCK the state
+        this.isDrawing = true; // Set this FIRST to lock state
         this.currentDrawTool = state.selectedTool;
         this.currentDrawColor = state.selectedColor;
         this.currentEnhancedTool = state.enhancedTool;
+        this.currentBrushSize = state.brushSize;
+        this.currentBrushOpacity = state.brushOpacity;
 
         // Dispatch draw start event for gamification
         document.dispatchEvent(new CustomEvent('canvasDrawStart'));
@@ -97,13 +100,12 @@ class CanvasEngine {
             return;
         }
 
-        // Draw mode
-        this.isDrawing = true;
+        // Store position for drawing
         this.lastX = x;
         this.lastY = y;
 
-        // Draw initial dot
-        this.drawSmoothDot(x, y, this.getDrawState());
+        // Draw initial dot using locked state
+        this.drawSmoothDot(x, y, this.getLockedDrawState());
     }
 
     draw(e) {
@@ -115,8 +117,8 @@ class CanvasEngine {
         const currentX = (e.clientX - rect.left) * scaleX;
         const currentY = (e.clientY - rect.top) * scaleY;
 
-        // Use stored draw state to prevent tool switching
-        const drawState = this.getDrawState();
+        // Use LOCKED draw state to prevent tool switching during drawing
+        const drawState = this.getLockedDrawState();
         
         // Draw smooth line with blending
         this.drawSmoothLine(this.lastX, this.lastY, currentX, currentY, drawState);
@@ -133,6 +135,9 @@ class CanvasEngine {
             return;
         }
 
+        // Save current context state
+        this.ctx.save();
+        
         if (state.selectedTool === 'eraser') {
             this.ctx.globalCompositeOperation = 'destination-out';
             this.ctx.globalAlpha = state.brushOpacity;
@@ -146,9 +151,8 @@ class CanvasEngine {
         this.ctx.arc(x, y, state.brushSize / 2, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Reset composite operation
-        this.ctx.globalCompositeOperation = 'source-over';
-        this.ctx.globalAlpha = 1;
+        // Restore context state
+        this.ctx.restore();
     }
 
     drawSmoothLine(x1, y1, x2, y2, state) {
@@ -168,6 +172,9 @@ class CanvasEngine {
             return;
         }
 
+        // Save current context state
+        this.ctx.save();
+        
         if (state.selectedTool === 'eraser') {
             this.ctx.globalCompositeOperation = 'destination-out';
             this.ctx.globalAlpha = state.brushOpacity;
@@ -195,9 +202,8 @@ class CanvasEngine {
             }
         }
         
-        // Reset composite operation
-        this.ctx.globalCompositeOperation = 'source-over';
-        this.ctx.globalAlpha = 1;
+        // Restore context state
+        this.ctx.restore();
     }
 
     instantMix(newColor, clickX, clickY) {
@@ -306,12 +312,15 @@ class CanvasEngine {
 
     stopDrawing() {
         if (this.isDrawing) {
-            this.isDrawing = false;
+            // Clear ALL stored draw state FIRST
+            this.currentDrawTool = undefined;
+            this.currentDrawColor = undefined;
+            this.currentEnhancedTool = undefined;
+            this.currentBrushSize = undefined;
+            this.currentBrushOpacity = undefined;
             
-            // Clear stored draw state
-            this.currentDrawTool = null;
-            this.currentDrawColor = null;
-            this.currentEnhancedTool = null;
+            // Then set drawing to false
+            this.isDrawing = false;
             
             this.saveState();
             this.updateMixedColorDisplay();
@@ -432,6 +441,9 @@ class CanvasEngine {
     }
 
     setTool(tool) {
+        // Don't change cursor during drawing to prevent switching
+        if (this.isDrawing) return;
+        
         const cursors = {
             brush: this.mixMode === 'instant' ? 'pointer' : 'crosshair',
             eraser: 'grab'
@@ -690,16 +702,22 @@ class CanvasEngine {
     
     // Get consistent draw state during drawing operation
     getDrawState() {
-        if (this.isDrawing) {
-            // Use stored state during drawing to prevent tool switching
+        return this.app.getState();
+    }
+    
+    // Get LOCKED draw state that cannot change during drawing
+    getLockedDrawState() {
+        if (this.isDrawing && this.currentDrawTool !== undefined) {
+            // Use completely stored state during drawing to prevent ANY switching
             return {
                 selectedTool: this.currentDrawTool,
                 selectedColor: this.currentDrawColor,
                 enhancedTool: this.currentEnhancedTool,
-                brushSize: this.app.getState().brushSize,
-                brushOpacity: this.app.getState().brushOpacity
+                brushSize: this.currentBrushSize,
+                brushOpacity: this.currentBrushOpacity
             };
         }
+        // Fallback to current state if not drawing
         return this.app.getState();
     }
 }

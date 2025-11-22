@@ -178,6 +178,12 @@ class MobileOptimizer {
   }
 
   handleBottomNavAction(nav) {
+    // Update active nav item
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    document.querySelector(`[data-nav="${nav}"]`).classList.add('active');
+    
     switch (nav) {
       case 'canvas':
         this.closeAllPanels();
@@ -231,6 +237,11 @@ class MobileOptimizer {
     canvas.addEventListener('touchmove', (e) => {
       clearTimeout(this.longPressTimer);
 
+      // Don't handle gestures during drawing
+      if (this.app.canvasEngine && this.app.canvasEngine.isDrawing) {
+        return;
+      }
+
       if (touchCount === 2) {
         e.preventDefault();
         this.handlePinchZoom(e, initialDistance);
@@ -242,6 +253,12 @@ class MobileOptimizer {
 
     canvas.addEventListener('touchend', (e) => {
       clearTimeout(this.longPressTimer);
+      
+      // Don't handle tap gestures during drawing
+      if (this.app.canvasEngine && this.app.canvasEngine.isDrawing) {
+        touchCount = 0;
+        return;
+      }
       
       const touchDuration = Date.now() - this.touchStartTime;
       const currentTime = Date.now();
@@ -267,6 +284,11 @@ class MobileOptimizer {
   }
 
   handleSwipeGesture(e) {
+    // Don't handle swipes during drawing to prevent tool switching
+    if (this.app.canvasEngine && this.app.canvasEngine.isDrawing) {
+      return;
+    }
+    
     const currentPos = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY
@@ -293,14 +315,14 @@ class MobileOptimizer {
   }
 
   handleSwipeLeft() {
-    // Next color
-    this.app.colorManager.selectNextColor();
+    // Next color - use surprise me instead
+    this.app.surpriseMe();
     this.hapticFeedback('light');
   }
 
   handleSwipeRight() {
-    // Previous color
-    this.app.colorManager.selectPreviousColor();
+    // Previous color - use surprise me instead  
+    this.app.surpriseMe();
     this.hapticFeedback('light');
   }
 
@@ -590,25 +612,35 @@ class MobileOptimizer {
 
   toggleColorPanel() {
     const panel = document.getElementById('color-panel');
+    const toolsPanel = document.getElementById('tools-panel');
     const isOpen = panel.classList.contains('open');
     
-    this.closeAllPanels();
+    // Close tools panel if open
+    toolsPanel.classList.remove('open');
     
     if (!isOpen) {
       panel.classList.add('open');
       this.showOverlay();
+    } else {
+      panel.classList.remove('open');
+      this.hideOverlay();
     }
   }
 
   toggleToolsPanel() {
     const panel = document.getElementById('tools-panel');
+    const colorPanel = document.getElementById('color-panel');
     const isOpen = panel.classList.contains('open');
     
-    this.closeAllPanels();
+    // Close color panel if open
+    colorPanel.classList.remove('open');
     
     if (!isOpen) {
       panel.classList.add('open');
       this.showOverlay();
+    } else {
+      panel.classList.remove('open');
+      this.hideOverlay();
     }
   }
 
