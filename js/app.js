@@ -24,7 +24,7 @@ class ColorLab {
     this.canvas = null;
     this.canvasEngine = null;
     this.colorManager = null;
-    this.settingsManager = null;
+
     this.storageManager = null;
     this.mobileOptimizer = null;
     this.animationEngine = null;
@@ -43,7 +43,6 @@ class ColorLab {
     try {
       // Initialize core managers
       this.storageManager = new StorageManager();
-      this.settingsManager = new SettingsManager(this);
       this.colorManager = new ColorManager(this);
       this.canvasEngine = new CanvasEngine(this);
       
@@ -148,15 +147,12 @@ class ColorLab {
       this.state.settings = { ...this.state.settings, ...savedSettings };
     }
 
-    // Apply theme
+    // Apply theme immediately and ensure persistence
     document.body.setAttribute("data-theme", this.state.settings.theme);
   }
 
   setupEventListeners() {
-    // Header buttons
-    document.getElementById("settings-btn").addEventListener("click", () => {
-      this.settingsManager.show();
-    });
+    // Header buttons (settings removed - now in home page)
 
     document.getElementById("help-btn").addEventListener("click", () => {
       this.showHelp();
@@ -1065,7 +1061,7 @@ class ColorLab {
     this.state.settings = { ...this.state.settings, ...newSettings };
     this.storageManager.set("settings", this.state.settings);
 
-    // Apply theme change
+    // Apply theme change immediately
     if (newSettings.theme) {
       document.body.setAttribute("data-theme", newSettings.theme);
     }

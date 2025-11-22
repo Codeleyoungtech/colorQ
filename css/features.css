@@ -505,23 +505,50 @@
   }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .onboarding-tooltip,
-  .shop-item,
-  .share-platform-btn {
-    background: #1A1A1A;
-    color: white;
-    border-color: #3A3A3A;
-  }
-  
-  .category-btn {
-    background: #2A2A2A;
-    color: white;
-    border-color: #3A3A3A;
-  }
-  
-  .share-caption {
-    background: #2A2A2A;
-  }
+/* Theme Support */
+.onboarding-tooltip,
+.shop-item,
+.share-platform-btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-light);
+}
+
+.category-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-light);
+}
+
+.share-caption {
+  background: var(--bg-tertiary);
+}
+
+.platform-name {
+  color: var(--text-primary);
+}
+
+.share-caption textarea {
+  color: var(--text-secondary);
+}
+
+.item-info h3 {
+  color: var(--text-primary);
+}
+
+.item-info p {
+  color: var(--text-secondary);
+}
+
+.tooltip-header h3 {
+  color: var(--text-primary);
+}
+
+.step-indicator {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.tooltip-body p {
+  color: var(--text-secondary);
 }

@@ -58,19 +58,10 @@ class DailyQuestSystem {
   }
 
   createQuestUI() {
-    // Add quest button to home screen
-    const homeActions = document.querySelector('.actions-section');
-    if (homeActions) {
-      const questBtn = document.createElement('button');
-      questBtn.className = 'quest-btn-home';
-      questBtn.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="12,2 15.09,8.26 22,9 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9 8.91,8.26"></polygon>
-        </svg>
-        🎯 Today's Quest: ${this.currentQuest.name}
-      `;
+    // Update existing quest button text
+    const questBtn = document.getElementById('daily-quest-btn');
+    if (questBtn && this.currentQuest) {
       questBtn.addEventListener('click', () => this.startQuest());
-      homeActions.insertBefore(questBtn, homeActions.firstChild);
     }
   }
 

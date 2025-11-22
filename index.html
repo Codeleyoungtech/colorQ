@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="home.css" />
     <link rel="stylesheet" href="css/quest-styles.css" />
-    <link rel="stylesheet" href="css/progress-realm.css" />
+    <link rel="stylesheet" href="css/level-map.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -68,7 +68,21 @@
   gtag('config', 'G-C1HRFBHNW1');
 </script>
   </head>
-  <body data-theme="light">
+  <body>
+    <script>
+      // Load theme immediately to prevent flash
+      (function() {
+        try {
+          const settings = JSON.parse(localStorage.getItem('colorQ_settings') || '{}');
+          const theme = settings.theme || 'light';
+          document.body.setAttribute('data-theme', theme);
+          document.body.classList.add('theme-' + theme);
+        } catch (e) {
+          document.body.setAttribute('data-theme', 'light');
+          document.body.classList.add('theme-light');
+        }
+      })();
+    </script>
     <div id="home-app">
       <!-- Header -->
       <header class="home-header">
@@ -78,6 +92,13 @@
             <p>Create beautiful digital art</p>
           </div>
           <div class="header-actions">
+            <button class="header-btn" id="shop-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+            </button>
             <button class="header-btn" id="settings-btn">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings-icon lucide-settings">
                 <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/>
@@ -101,74 +122,82 @@
           </div>
           <p>Ready for today's quest?</p>
           <div class="stats-overview" id="stats-overview">
-            <div class="stat-card level-card" id="level-card">
+            <div class="stat-card level-card" id="level-card" data-card="level">
+              <div class="stat-icon">🏆</div>
               <div class="stat-value" id="level-stat">1</div>
               <div class="stat-label">Level</div>
-              <div class="level-progress-ring">
-                <svg class="progress-ring" width="60" height="60">
-                  <circle class="progress-ring-bg" cx="30" cy="30" r="25"></circle>
-                  <circle class="progress-ring-fill" cx="30" cy="30" r="25" id="level-progress"></circle>
-                </svg>
-              </div>
+              <div class="stat-extra" id="level-extra">Artist Rank</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" id="xp-card" data-card="xp">
+              <div class="stat-icon">⚡</div>
               <div class="stat-value" id="xp-stat">0</div>
               <div class="stat-label">Total XP</div>
+              <div class="stat-extra" id="xp-extra">Experience Points</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" id="projects-card" data-card="projects">
+              <div class="stat-icon">🎨</div>
               <div class="stat-value" id="projects-stat">0</div>
               <div class="stat-label">Projects</div>
+              <div class="stat-extra" id="projects-extra">Artworks Created</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" id="gems-card" data-card="gems">
+              <div class="stat-icon">💎</div>
               <div class="stat-value" id="gems-stat">0</div>
               <div class="stat-label">Gems</div>
+              <div class="stat-extra" id="gems-extra">Premium Currency</div>
             </div>
-            <div class="swipe-indicator mobile-only">
-              <div class="swipe-arrow">↑</div>
-              <div class="card-counter"><span id="card-counter">1</span>/4</div>
-            </div>
-            <canvas id="particle-canvas" class="particle-canvas mobile-only"></canvas>
+
           </div>
         </div>
 
-        <div class="actions-section">
-          <button class="quest-btn" id="daily-quest-btn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="12,2 15.09,8.26 22,9 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9 8.91,8.26"></polygon>
-            </svg>
-            🎯 Today's Quest
-          </button>
-          
-          <button class="primary-btn" id="new-project-btn">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            New Project
-          </button>
+        <div class="actions-container">
+          <!-- Primary Action -->
+          <div class="primary-action-group">
+            <button class="btn-primary" id="new-project-btn">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Create New Project</span>
+            </button>
+          </div>
 
-          <button class="secondary-btn" id="import-btn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="17,8 12,3 7,8"></polyline>
-              <line x1="12" y1="3" x2="12" y2="15"></line>
-            </svg>
-            Import Project
-          </button>
-          <button class="secondary-btn" id="achievements-btn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="12,2 15.09,8.26 22,9 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9 8.91,8.26"></polygon>
-            </svg>
-            Achievements
-          </button>
+          <!-- Secondary Action -->
+          <div class="secondary-action-group">
+            <button class="btn-secondary" id="daily-quest-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12,2 15.09,8.26 22,9 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9 8.91,8.26"></polygon>
+              </svg>
+              <span>Today's Quest</span>
+            </button>
+          </div>
 
+          <!-- Tertiary Actions -->
+          <div class="tertiary-actions-grid">
+            <button class="btn-tertiary" id="import-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17,8 12,3 7,8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Import Project</span>
+            </button>
+            
+            <button class="btn-tertiary" id="achievements-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12,2 15.09,8.26 22,9 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9 8.91,8.26"></polygon>
+              </svg>
+              <span>Achievements</span>
+            </button>
+            
+            <button class="btn-tertiary" id="daily-wheel-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polygon points="10,8 16,12 10,16 10,8"></polygon>
+              </svg>
+              <span>Daily Wheel</span>
+            </button>
+          </div>
         </div>
 
         <div class="projects-section">
@@ -304,30 +333,164 @@
               <button class="theme-btn" data-theme="nature">Nature</button>
             </div>
           </div>
+
+          <div class="settings-section">
+            <h3>Interface</h3>
+            <div class="setting-item">
+              <label for="animation-speed">Animation Speed</label>
+              <select id="animation-speed">
+                <option value="off">Off</option>
+                <option value="subtle">Subtle</option>
+                <option value="normal" selected>Normal</option>
+                <option value="playful">Playful</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label class="checkbox-label">
+                <input type="checkbox" id="sound-effects" checked />
+                <span class="checkmark"></span>
+                Sound Effects
+              </label>
+            </div>
+            <div class="setting-item">
+              <label class="checkbox-label">
+                <input type="checkbox" id="auto-save" checked />
+                <span class="checkmark"></span>
+                Auto Save
+              </label>
+            </div>
+          </div>
+          
+          <div class="settings-footer">
+            <div class="version-info">
+              <span class="crafted-by">Crafted by <span class="brand">codeleyoungtech</span><span class="ceyt">(ceyt)</span></span>
+              <span class="version">v1.1.0</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Progress Realm -->
-    <div id="progress-realm" class="progress-realm">
-      <div class="realm-header">
-        <button class="realm-back" id="realm-back">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <div class="realm-progress">
-          <div class="progress-text" id="realm-progress-text">Level 1 → Level 2 • 0 / 100 XP</div>
-          <div class="streak-indicator">
-            <span class="fire-icon">🔥</span>
-            <span id="streak-days">0</span>
+
+
+    <!-- Level Map Modal -->
+    <div class="level-map-overlay" id="level-map-modal">
+      <div class="level-map-container">
+        <div class="level-map-header">
+          <button class="map-close-btn" id="map-close">
+            ×
+          </button>
+          <div class="progress-info">
+            <div class="xp-text" id="xp-text">Level 1 • 0 XP</div>
+          </div>
+          <div></div>
+        </div>
+        <div class="level-map-content">
+          <div class="levels-grid" id="levels-grid">
+            <!-- Levels will be rendered here -->
           </div>
         </div>
       </div>
-      
-      <div class="realm-content" id="realm-content">
-        <div class="energy-thread" id="energy-thread"></div>
-        <div class="level-cards-container" id="level-cards"></div>
+    </div>
+
+    <!-- Level Tooltip -->
+    <div class="level-tooltip" id="level-tooltip">
+      <div class="tooltip-header">
+        <div class="level-number" id="tooltip-level">1</div>
+        <div class="level-title" id="tooltip-title">Level 1</div>
+      </div>
+      <div class="tooltip-unlocks" id="tooltip-unlocks">
+        <!-- Unlocks will be rendered here -->
+      </div>
+      <div class="tooltip-xp" id="tooltip-xp">100 XP to unlock</div>
+      <button class="tooltip-action" id="tooltip-action">Start Level</button>
+    </div>
+
+    <!-- Achievements Modal -->
+    <div class="modal-overlay" id="achievements-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>🏆 Achievements</h2>
+          <button class="modal-close" id="achievements-close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-content">
+          <div class="achievement-stats">
+            <div class="stat-item">
+              <div class="stat-value" id="achievements-unlocked">0</div>
+              <div class="stat-label">Unlocked</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="total-achievements">12</div>
+              <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="achievement-xp">0</div>
+              <div class="stat-label">XP Earned</div>
+            </div>
+          </div>
+          <div class="achievement-grid" id="achievement-grid">
+            <!-- Achievements will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Wheel Modal -->
+    <div class="modal-overlay" id="wheel-modal">
+      <div class="modal wheel-modal">
+        <div class="modal-header">
+          <h2>🎡 Daily Spin Wheel</h2>
+          <button class="modal-close" id="wheel-close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-content">
+          <div class="wheel-container">
+            <div class="wheel-pointer">▼</div>
+            <div class="wheel-wrapper">
+              <canvas id="wheel-canvas" width="300" height="300"></canvas>
+            </div>
+          </div>
+          <div class="wheel-info">
+            <p class="wheel-description">Spin once daily for amazing rewards!</p>
+            <div class="wheel-status" id="wheel-status">
+              <span class="status-text">Ready to spin!</span>
+            </div>
+          </div>
+          <div class="wheel-actions">
+            <button class="wheel-spin-btn" id="spin-wheel-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+              </svg>
+              Spin Wheel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wheel Result Modal -->
+    <div class="modal-overlay" id="wheel-result-modal">
+      <div class="modal result-modal">
+        <div class="result-content">
+          <div class="result-icon" id="result-icon">🎉</div>
+          <h2 class="result-title">Congratulations!</h2>
+          <div class="result-prize" id="result-prize">You won 10 Gems!</div>
+          <div class="result-animation">
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+          </div>
+          <button class="result-close-btn" id="result-close-btn">Awesome!</button>
+        </div>
       </div>
     </div>
 
@@ -336,7 +499,7 @@
     <script src="js/daily-quest.js"></script>
     <script src="js/gems-system.js"></script>
     <script src="js/level-system.js"></script>
-    <script src="js/progress-realm.js"></script>
+    <script src="js/level-map-ui.js"></script>
     <script src="js/home.js"></script>
   </body>
 </html>

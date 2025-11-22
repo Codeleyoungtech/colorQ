@@ -1,8 +1,12 @@
 // Storage Manager
 class StorageManager {
+  constructor() {
+    this.prefix = 'colorQ_';
+  }
+
   get(key) {
     try {
-      const item = localStorage.getItem(key);
+      const item = localStorage.getItem(this.prefix + key);
       return item ? JSON.parse(item) : null;
     } catch {
       return null;
@@ -11,13 +15,13 @@ class StorageManager {
 
   set(key, value) {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      localStorage.setItem(this.prefix + key, JSON.stringify(value));
     } catch {
       console.warn('Storage failed');
     }
   }
 
   remove(key) {
-    localStorage.removeItem(key);
+    localStorage.removeItem(this.prefix + key);
   }
 }

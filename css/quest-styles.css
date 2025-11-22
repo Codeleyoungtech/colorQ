@@ -436,39 +436,55 @@
   }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .quest-panel {
-    background: #1A1A1A;
-    color: white;
-  }
-  
-  .quest-modal-content,
-  .quest-results-content {
-    background: #1A1A1A;
-    color: white;
-  }
-  
-  .quest-timer-big {
-    background: #2A2A2A;
-    border-color: #3A3A3A;
-  }
-  
-  .quest-target-image,
-  .quest-modal-target-image {
-    background: #2A2A2A;
-    border-color: #3A3A3A;
-  }
-  
-  .quest-progress-bar {
-    background: #3A3A3A;
-  }
-  
-  .quest-btn-secondary {
-    background: #2A2A2A;
-    color: #CCCCCC;
-    border-color: #3A3A3A;
-  }
+/* Theme Support */
+.quest-panel {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.quest-modal-content,
+.quest-results-content {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.quest-timer-big {
+  background: var(--bg-tertiary);
+  border-color: var(--border-light);
+}
+
+.quest-target-image,
+.quest-modal-target-image {
+  background: var(--bg-tertiary);
+  border-color: var(--border-light);
+}
+
+.quest-progress-bar {
+  background: var(--border-light);
+}
+
+.quest-btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-color: var(--border-light);
+}
+
+.quest-name {
+  color: var(--text-primary);
+}
+
+.quest-timer-label,
+.quest-target-label,
+.quest-progress-label {
+  color: var(--text-secondary);
+}
+
+.quest-modal-title {
+  color: var(--text-primary);
+}
+
+.quest-modal-subtitle {
+  color: var(--text-secondary);
 }
 
 /* Home Screen Quest Button */

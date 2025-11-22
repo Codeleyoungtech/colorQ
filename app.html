@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/mobile.css" />
     <link rel="stylesheet" href="css/quest-styles.css" />
     <link rel="stylesheet" href="css/features.css" />
+    <link rel="stylesheet" href="css/level-map.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -23,7 +24,22 @@
   gtag('config', 'G-C1HRFBHNW1');
 </script>
   </head>
-  <body data-theme="light">
+  <body>
+    <script>
+      // Load theme immediately to prevent flash
+      (function() {
+        try {
+          const settings = JSON.parse(localStorage.getItem('colorQ_settings') || '{}');
+          const theme = settings.theme || 'light';
+          document.body.setAttribute('data-theme', theme);
+          // Also set a class for additional styling if needed
+          document.body.classList.add('theme-' + theme);
+        } catch (e) {
+          document.body.setAttribute('data-theme', 'light');
+          document.body.classList.add('theme-light');
+        }
+      })();
+    </script>
     <!-- Loading Screen -->
     <div id="loading-screen">
       <div class="loading-content">
@@ -67,30 +83,7 @@
               <polyline points="9,22 9,12 15,12 15,22"></polyline>
             </svg>
           </button>
-          <button
-            class="header-btn"
-            id="settings-btn"
-            aria-label="Settings"
-            title="Settings"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-settings-icon lucide-settings"
-            >
-              <path
-                d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
-              />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </button>
+
           <button
             class="header-btn"
             id="help-btn"
@@ -570,68 +563,39 @@
       </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div class="modal-overlay" id="settings-modal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>Settings</h2>
-          <button
-            class="modal-close"
-            id="settings-close"
-            aria-label="Close settings"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        <div class="modal-content">
-          <div class="settings-section">
-            <h3>Theme</h3>
-            <div class="theme-options">
-              <button class="theme-btn active" data-theme="light">Light</button>
-              <button class="theme-btn" data-theme="dark">Dark</button>
-              <button class="theme-btn" data-theme="pastel">Pastel</button>
-              <button class="theme-btn" data-theme="nature">Nature</button>
-            </div>
-          </div>
 
-          <div class="settings-section">
-            <h3>Interface</h3>
-            <div class="setting-item">
-              <label for="animation-speed">Animation Speed</label>
-              <select id="animation-speed">
-                <option value="off">Off</option>
-                <option value="subtle">Subtle</option>
-                <option value="normal" selected>Normal</option>
-                <option value="playful">Playful</option>
-              </select>
-            </div>
-            <div class="setting-item">
-              <label class="checkbox-label">
-                <input type="checkbox" id="sound-effects" checked />
-                <span class="checkmark"></span>
-                Sound Effects
-              </label>
-            </div>
-            <div class="setting-item">
-              <label class="checkbox-label">
-                <input type="checkbox" id="auto-save" checked />
-                <span class="checkmark"></span>
-                Auto Save
-              </label>
-            </div>
+
+    <!-- Level Map Modal -->
+    <div class="level-map-overlay" id="level-map-modal">
+      <div class="level-map-container">
+        <div class="level-map-header">
+          <button class="map-close-btn" id="map-close">
+            ×
+          </button>
+          <div class="progress-info">
+            <div class="xp-text" id="xp-text">Level 1 • 0 XP</div>
+          </div>
+          <div></div>
+        </div>
+        <div class="level-map-content">
+          <div class="levels-grid" id="levels-grid">
+            <!-- Levels will be rendered here -->
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Level Tooltip -->
+    <div class="level-tooltip" id="level-tooltip">
+      <div class="tooltip-header">
+        <div class="level-number" id="tooltip-level">1</div>
+        <div class="level-title" id="tooltip-title">Level 1</div>
+      </div>
+      <div class="tooltip-unlocks" id="tooltip-unlocks">
+        <!-- Unlocks will be rendered here -->
+      </div>
+      <div class="tooltip-xp" id="tooltip-xp">100 XP to unlock</div>
+      <button class="tooltip-action" id="tooltip-action">Start Level</button>
     </div>
 
     <!-- Toast Notifications -->
@@ -640,7 +604,7 @@
     <script src="js/app.js"></script>
     <script src="js/canvas.js"></script>
     <script src="js/colors.js"></script>
-    <script src="js/settings.js"></script>
+
     <script src="js/storage.js"></script>
     <script src="js/mobile.js"></script>
     <script src="js/animations.js"></script>
@@ -649,6 +613,7 @@
     <script src="js/special-effects.js"></script>
     <script src="js/daily-quest.js"></script>
     <script src="js/gems-system.js"></script>
+    <script src="js/level-map-ui.js"></script>
     <script src="js/events.js"></script>
     <script src="js/shop.js"></script>
     <script src="js/onboarding.js"></script>
